@@ -1,10 +1,10 @@
-#include "stack.h"
+#include "gstack.h"
 
 int main()
 {
     stack S = {};
 
-    stack_ctor(&S, sizeof(int));
+    stack_ctor(&S);
     stack_push(&S, 12);
     stack_push(&S, 13);
     stack_push(&S, 14);
