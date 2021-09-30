@@ -23,7 +23,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run : ./stack-test
   
 
@@ -41,7 +41,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
  
 
@@ -60,7 +60,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
  
   poison-test:
@@ -76,7 +76,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
   ptr-poison-test:
@@ -92,7 +92,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
   comb-ptr-poison-test:
@@ -108,7 +108,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
   comb-poison-wrapper-test:
@@ -124,7 +124,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
   ptr-wrapper-test:
@@ -140,7 +140,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config Release
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/tests
+      working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
 
