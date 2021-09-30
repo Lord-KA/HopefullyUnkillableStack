@@ -6,17 +6,20 @@
 #include <assert.h>
 #include <string.h>
 
+// #define FULL_DEBUG //TODO
 
-#define STACK_USE_POISON
-#define STACK_USE_PTR_POISON
-#define STACK_USE_WRAPPER
-#define STACK_VERBOSE 2
+#ifdef FULL_DEBUG
+    #define STACK_USE_POISON
+    #define STACK_USE_PTR_POISON
+    #define STACK_USE_WRAPPER
+    #define STACK_VERBOSE 2
+#endif
 
 
 static const size_t STACK_STARTING_LEN = 2;
 
 static const double EXPAND_FACTOR = 1.5;
-static const double SHRINKAGE_FACTOR = 1.3;
+static const double SHRINKAGE_FACTOR = 1.3;         //TODO shrink mem in pop
 
 #ifdef STACK_USE_PTR_POISON
     static const void     *INVALID_PTR = (void*)0xDEADC0DE1;

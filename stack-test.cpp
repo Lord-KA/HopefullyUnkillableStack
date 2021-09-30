@@ -10,6 +10,30 @@
 std::mt19937 rnd(179);
 
 
+TEST(General, Modes)
+{
+    printf("Debug modes:\n {\n");
+    #ifdef STACK_USE_POISON
+        printf("\tSTACK_USE_POISON\n");
+    #endif
+    #ifdef STACK_USE_WRAPPER
+        printf("\tSTACK_USE_WRAPPER\n");
+    #endif
+    #ifdef STACK_USE_PTR_POISON
+        printf("\tSTACK_USE_PTR_POISON\n");
+    #endif
+    #ifdef FULL_DEBUG
+        printf("\tFULL_DEBUG\n");
+    #endif
+    #ifdef NDEBUG
+        printf("\tNDEBUG\n");
+    #endif
+    #ifdef STACK_VERBOSE
+        printf("\tSTACK_VERBOSE = %d\n", STACK_VERBOSE);
+    #endif
+    printf(" }\n");
+}
+
 TEST(PushPop, Manual)
 {
     stack S = {};
