@@ -7,6 +7,7 @@
 #include <string.h>
 
 // #define FULL_DEBUG //TODO
+// #define AUTO_SHRINK 
 
 #ifdef FULL_DEBUG
     #define STACK_USE_POISON
@@ -17,10 +18,10 @@
 
 #define STACK_USE_WRAPPER
 
-static const size_t STACK_STARTING_LEN = 2;
+static const size_t STACK_STARTING_LEN = 20;
 
 static const double EXPAND_FACTOR = 1.5;
-static const double SHRINKAGE_FACTOR = 1.3;         //TODO shrink mem in pop
+static const double SHRINKAGE_FACTOR = 3;         //TODO shrink mem in pop
 
 #ifdef STACK_USE_PTR_POISON
     static const void     *INVALID_PTR = (void*)0xDEADC0DE1;
@@ -29,23 +30,27 @@ static const double SHRINKAGE_FACTOR = 1.3;         //TODO shrink mem in pop
 #endif
 
 #ifdef STACK_USE_POISON
-    static const int ELEM_POISON    = 0x9BADBEEF;
+    static const int ELEM_POISON    = 0x8BADBEEF;
+    static const int FREED_POISON   = 0x7BADBEEF;
 #endif
 
 #ifdef STACK_USE_WRAPPER
-    static const int WRAPPER_POISON = 0x8BADBEEF;
+    static const int WRAPPER_POISON = 0x9BADBEEF;
     static const size_t WRAPPER_SIZE = 3;
 #else
     static const size_t WRAPPER_SIZE = 0;
 #endif
 
 #ifndef STACK_VERBOSE
-#define STACK_VERBOSE 0
+    #define STACK_VERBOSE 0
 #endif
+
+
+typedef int STACK_TYPE;
 
 static const char LOG_DELIM[] = "===========================";
 
-bool ptrValid(void* ptr)         //TODO add some additional checks
+bool ptrValid(const void* ptr)         //TODO add some additional checks
 {
     if (ptr == NULL)
         return false;
@@ -81,6 +86,12 @@ struct stack
 
 } typedef stack;
 
+
+void stack_dumpToStream(const stack *this_, FILE *out);
+
+stack_status stack_healthCheck(stack *this_);
+
+
 static size_t stack_expandFactorCalc(size_t capacity)          
 {
     if (capacity <= 1)
@@ -88,7 +99,13 @@ static size_t stack_expandFactorCalc(size_t capacity)
     return capacity * EXPAND_FACTOR;
 }
 
-void stack_dumpToStream(const stack *this_, FILE *out);
+static size_t stack_shrinkageFactorCalc(size_t capacity)
+{
+    if (capacity <= 1)          //TODO think if it is a good practice
+        return 2;
+    return capacity * SHRINKAGE_FACTOR;
+}
+
 
 void stack_logErrorToStream(const stack *this_, FILE *out, const char *message)
 {
@@ -99,6 +116,53 @@ void stack_logErrorToStream(const stack *this_, FILE *out, const char *message)
 void stack_logError(const stack *this_, const char *message)
 {
     stack_logErrorToStream(this_, this_->logStream, message);
+}
+
+
+stack_status stack_reallocate(stack *this_, const size_t newCapacity)
+{
+    #ifdef STACK_USE_POISON
+        if (newCapacity < this_->capacity) 
+        {
+            for (size_t i = newCapacity; i < this_->capacity; ++i)
+                this_->data[i] = FREED_POISON;
+        }
+    #endif
+
+    int *newDataWrapper = (int*)realloc(this_->dataWrapper, (newCapacity + 2 * WRAPPER_SIZE) * this_->elemSize);
+    if (newDataWrapper == NULL)             // reallocation failed
+    {
+        newDataWrapper = (int*)calloc(newCapacity, this_->elemSize);
+        if (!newDataWrapper) {
+            #ifdef STACK_USE_PTR_POISON
+                newDataWrapper = (int*)INVALID_PTR;
+            #endif
+            return BAD_MEM_ALLOC;
+        }
+
+        memcpy(newDataWrapper, this_->dataWrapper, (WRAPPER_SIZE + this_->capacity) * this_->elemSize);     //TODO check if this will ever work
+        free(this_->dataWrapper);
+
+    }
+
+    if (this_->dataWrapper != newDataWrapper) { 
+        this_->dataWrapper = newDataWrapper;
+        this_->data = this_->dataWrapper + WRAPPER_SIZE;
+    }
+
+    #ifdef STACK_USE_POISON
+        for (size_t i = this_->capacity; i < newCapacity; ++i)
+            this_->data[i] = ELEM_POISON;
+    #endif
+
+    #ifdef STACK_USE_WRAPPER
+        for (size_t i = 0; i < WRAPPER_SIZE; ++i) {
+            this_->data[i + newCapacity] = WRAPPER_POISON;    
+        }
+    #endif
+
+    this_->capacity = newCapacity;
+    return stack_healthCheck(this_);
 }
 
 stack_status stack_healthCheck(stack *this_)    //TODO
@@ -158,20 +222,22 @@ stack_status stack_healthCheck(stack *this_)    //TODO
 void stack_dumpToStream(const stack *this_, FILE *out)
 {
     fprintf(out, "%s\n", LOG_DELIM);
+    fprintf(out, "| Stack [%p] :\n", this_);
+    fprintf(out, "|----------------\n");
     fprintf(out, "| Current status = %d\n", this_->status);
     fprintf(out, "| Capacity       = %zu\n", this_->capacity);
     fprintf(out, "| Len            = %zu\n", this_->len);
     fprintf(out, "| Elem size      = %zu\n", this_->elemSize);
-    fprintf(out, "|  {\n");
+    fprintf(out, "|   {\n");
 
     #ifdef STACK_USE_WRAPPER
         for (size_t i = 0; i < WRAPPER_SIZE; ++i) {
-                fprintf(out, "|  W %d\n", this_->dataWrapper[i]);           // `W` for Wrapper
+                fprintf(out, "| w   %d\n", this_->dataWrapper[i]);           // `w` for Wrapper
         }
     #endif
 
     for (size_t i = 0; i < this_->len; ++i) {
-            fprintf(out, "|  * %d\n", this_->data[i]);                  // `*` for in-use cells
+            fprintf(out, "| *   %d\n", this_->data[i]);                      // `*` for in-use cells
     }
 
     bool printAll = false;
@@ -183,22 +249,22 @@ void stack_dumpToStream(const stack *this_, FILE *out)
         }
     #endif  
 
-    if (this_->capacity - this_->len > 10 && printAll && STACK_VERBOSE > 1) {                // shortens the outp of same poison
-        fprintf(out, "|    %d\n", this_->data[this_->len]);
-        fprintf(out, "|    %d\n", this_->data[this_->len]);
-        fprintf(out, "|    %d\n", this_->data[this_->len]);
-        fprintf(out, "|    ...\n");
-        fprintf(out, "|    %d\n", this_->data[this_->len]);
+    if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens the outp of same poison
+        fprintf(out, "|     %d\n", this_->data[this_->len]);
+        fprintf(out, "|     %d\n", this_->data[this_->len]);
+        fprintf(out, "|     %d\n", this_->data[this_->len]);
+        fprintf(out, "|     ...\n");
+        fprintf(out, "|     %d\n", this_->data[this_->len]);
     }
     else {
         for (size_t i = this_->len; i < this_->capacity; ++i) {
-            fprintf(out, "|    %d\n", this_->data[i]);
+            fprintf(out, "|     %d\n", this_->data[i]);
         }
     }
 
     #ifdef STACK_USE_WRAPPER
         for (size_t i = 0; i < WRAPPER_SIZE; ++i) {
-                fprintf(out, "|  W %d\n", this_->data[i + this_->capacity]);
+                fprintf(out, "| w   %d\n", this_->data[i + this_->capacity]);
         }
     #endif
 
@@ -259,6 +325,12 @@ stack_status stack_dtor(stack *this_)
     if (stack_healthCheck(this_))
         return this_->status;
 
+    #ifdef STACK_USE_POISON
+        for (size_t i = 0; i < this_->capacity + 2 * WRAPPER_SIZE; ++i)
+            this_->dataWrapper[i] = FREED_POISON;
+    #endif
+
+
     this_->capacity = -1;
     this_->len = -1;
     free(this_->dataWrapper);
@@ -284,6 +356,8 @@ stack_status stack_push(stack *this_, int item)
     if (this_->len == this_->capacity) 
     {
         const size_t newCapacity = stack_expandFactorCalc(this_->capacity);
+        stack_reallocate(this_, newCapacity);
+        /*
         int *newDataWrapper = (int*)realloc(this_->dataWrapper, (newCapacity + 2 * WRAPPER_SIZE) * this_->elemSize);
         if (newDataWrapper == NULL) // reallocation failed
         {
@@ -333,6 +407,7 @@ stack_status stack_push(stack *this_, int item)
 
             this_->capacity = newCapacity;
         }
+        */
     }
     
 
@@ -382,6 +457,15 @@ stack_status stack_pop(stack *this_, int* item)
     #ifdef STACK_USE_WRAPPER
     if (*item == WRAPPER_POISON)
         assert(!"Accessed cannary wrapper element");
+    #endif
+    
+    #ifdef AUTO_SHRINK
+        size_t newCapacity = stack_shrinkageFactorCalc(this_->capacity);
+
+        if (this_->len < newCapacity)
+        {
+            stack_reallocate(this_, newCapacity);
+        }
     #endif
 
     return stack_healthCheck(this_);

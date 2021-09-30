@@ -37,9 +37,11 @@ TEST(General, Modes)
 
 TEST(PushPop, Manual)
 {
+    FILE *log = fopen("log.txt", "a");
     stack S = {};
 
     stack_ctor(&S);
+    S.logStream = log;
     stack_push(&S, 12);
     stack_push(&S, 13);
     stack_push(&S, 14);
@@ -61,8 +63,8 @@ TEST(PushPop, Random)
 
     stack_ctor(&S);
     
-    size_t iterations = rnd() % 10000 + 1000;
-    iterations = 1; //TODO
+    size_t iterations = rnd() % 30000 + 100;
+    // iterations = 1;
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
         if (rnd() % 10 < 7) {
