@@ -9,6 +9,7 @@
 // std::mt19937 rnd(time(NULL));
 std::mt19937 rnd(179);
 
+#define STACK_USE_WRAPPER
 
 TEST(General, Modes)
 {
@@ -61,6 +62,7 @@ TEST(PushPop, Random)
     stack_ctor(&S);
     
     size_t iterations = rnd() % 10000 + 1000;
+    iterations = 1; //TODO
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
         if (rnd() % 10 < 7) {

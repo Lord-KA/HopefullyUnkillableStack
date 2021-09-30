@@ -15,6 +15,7 @@
     #define STACK_VERBOSE 2
 #endif
 
+#define STACK_USE_WRAPPER
 
 static const size_t STACK_STARTING_LEN = 2;
 
@@ -342,7 +343,7 @@ stack_status stack_push(stack *this_, int item)
         }
     #endif
     
-    #ifdef STACK_USE_WRAPPER
+    #if defined(STACK_USE_WRAPPER) && defined(STACK_USE_POISON)
         if (this_->data[this_->len] == WRAPPER_POISON) {
             stack_logErrorToStream(this_, out, "Requested elem in wrapper, stack didn't reallocate?");
             this_->status = BAD_MEM_ALLOC;
