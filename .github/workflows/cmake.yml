@@ -12,6 +12,7 @@ env:
 jobs:
   general-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -30,6 +31,7 @@ jobs:
 
   release-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -49,6 +51,7 @@ jobs:
 
   wrapper-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -65,6 +68,7 @@ jobs:
  
   poison-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -81,6 +85,7 @@ jobs:
 
   ptr-poison-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -97,6 +102,7 @@ jobs:
 
   comb-ptr-poison-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -113,6 +119,7 @@ jobs:
 
   comb-poison-wrapper-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
@@ -129,6 +136,7 @@ jobs:
 
   ptr-wrapper-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - uses: actions/checkout@v2
