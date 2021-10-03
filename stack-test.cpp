@@ -10,6 +10,7 @@
 std::mt19937 rnd(179);
 
 #define STACK_USE_WRAPPER
+#define AUTO_TEST
 
 TEST(General, Modes)
 {

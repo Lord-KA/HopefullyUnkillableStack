@@ -6,8 +6,8 @@
 #include <assert.h>
 #include <string.h>
 
-// #define FULL_DEBUG //TODO
-// #define AUTO_SHRINK 
+#define FULL_DEBUG //TODO
+#define AUTO_SHRINK 
 
 #ifdef FULL_DEBUG
     #define STACK_USE_POISON
@@ -21,7 +21,7 @@
 static const size_t STACK_STARTING_LEN = 20;
 
 static const double EXPAND_FACTOR = 1.5;
-static const double SHRINKAGE_FACTOR = 3;         //TODO shrink mem in pop
+static const double SHRINKAGE_FACTOR = 3;         
 
 #ifdef STACK_USE_PTR_POISON
     static const void     *INVALID_PTR = (void*)0xDEADC0DE1;
@@ -29,9 +29,11 @@ static const double SHRINKAGE_FACTOR = 3;         //TODO shrink mem in pop
     static const void *DEAD_STRUCT_PTR = (void*)0xDEADC0DE3;
 #endif
 
+static const size_t SIZE_T_POISON = -13;
+
 #ifdef STACK_USE_POISON
-    static const int ELEM_POISON    = 0x8BADBEEF;
-    static const int FREED_POISON   = 0x7BADBEEF;
+    static const int ELEM_POISON    = 0xDEADBEEF;           // add one-byte poison?
+    static const int FREED_POISON   = 0xDEADBEEF;
 #endif
 
 #ifdef STACK_USE_WRAPPER
@@ -50,13 +52,13 @@ typedef int STACK_TYPE;
 
 static const char LOG_DELIM[] = "===========================";
 
-bool ptrValid(const void* ptr)         //TODO add some additional checks
+bool ptrValid(const void* ptr)         //TODO add some additional checks?
 {
     if (ptr == NULL)
         return false;
 
     #ifdef STACK_USE_PTR_POISON
-        if (ptr == INVALID_PTR || ptr == FREED_PTR || ptr == DEAD_STRUCT_PTR)
+        if (ptr == INVALID_PTR || ptr == FREED_PTR || ptr == DEAD_STRUCT_PTR)           //TODO read about NAN tagging / bit masks
             return false;
     #endif  
 
@@ -140,7 +142,7 @@ stack_status stack_reallocate(stack *this_, const size_t newCapacity)
             return BAD_MEM_ALLOC;
         }
 
-        memcpy(newDataWrapper, this_->dataWrapper, (WRAPPER_SIZE + this_->capacity) * this_->elemSize);     //TODO check if this will ever work
+        memcpy(newDataWrapper, this_->dataWrapper, (WRAPPER_SIZE + this_->capacity) * this_->elemSize);     // it should never even get here, but just in case
         free(this_->dataWrapper);
 
     }
@@ -176,12 +178,12 @@ stack_status stack_healthCheck(stack *this_)    //TODO
 
     FILE *out = this_->logStream;
 
-    if ((this_->capacity == 0 || this_->capacity == -1) &&                     // checks if properly empty
-        (this_->len      == 0 || this_->len      == -1)) 
+    if ((this_->capacity == 0 || this_->capacity == SIZE_T_POISON) &&                     // checks if properly empty
+        (this_->len      == 0 || this_->len      == SIZE_T_POISON)) 
     {
         #ifdef STACK_USE_PTR_POISON                                 //TODO think of a better macro wrap
             if (this_->dataWrapper == (int*)FREED_PTR   &&
-                this_->data        == (int*)FREED_PTR)              //TODO think if invalid is good here 
+                this_->data        == (int*)FREED_PTR)              //TODO think if invalid would fit here 
             {        
                 this_->status = OK;
                 return OK;
@@ -193,7 +195,7 @@ stack_status stack_healthCheck(stack *this_)    //TODO
     }
 
     #ifdef STACK_USE_WRAPPER
-        for (size_t i = 0; i < WRAPPER_SIZE; ++i) {             //TODO maybe add front/back_WRAPPER_CORRUPTED
+        for (size_t i = 0; i < WRAPPER_SIZE; ++i) {             //TODO add front/back_WRAPPER_CORRUPTED
             if (this_->dataWrapper[i] != WRAPPER_POISON || this_->data[i + this_->capacity] != WRAPPER_POISON) {      
                 stack_logErrorToStream(this_, out, "Wrapper is corrupt!");
                 this_->status = WRAPPER_CORRUPTED;
@@ -230,14 +232,14 @@ void stack_dumpToStream(const stack *this_, FILE *out)
     fprintf(out, "| Elem size      = %zu\n", this_->elemSize);
     fprintf(out, "|   {\n");
 
-    #ifdef STACK_USE_WRAPPER
-        for (size_t i = 0; i < WRAPPER_SIZE; ++i) {
-                fprintf(out, "| w   %d\n", this_->dataWrapper[i]);           // `w` for Wrapper
+    #ifdef STACK_USE_WRAPPER                    //TODO read about graphviz 
+        for (size_t i = 0; i < WRAPPER_SIZE; ++i) {                 
+                fprintf(out, "| w   %d\n", this_->dataWrapper[i]);           // `w` for Wrappera    
         }
     #endif
 
     for (size_t i = 0; i < this_->len; ++i) {
-            fprintf(out, "| *   %d\n", this_->data[i]);                      // `*` for in-use cells
+            fprintf(out, "| *   %d\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
     }
 
     bool printAll = false;
@@ -249,11 +251,12 @@ void stack_dumpToStream(const stack *this_, FILE *out)
         }
     #endif  
 
-    if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens the outp of same poison
+    if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens outp of the same poison
         fprintf(out, "|     %d\n", this_->data[this_->len]);
         fprintf(out, "|     %d\n", this_->data[this_->len]);
         fprintf(out, "|     %d\n", this_->data[this_->len]);
         fprintf(out, "|     ...\n");
+        fprintf(out, "|     %d\n", this_->data[this_->len]);
         fprintf(out, "|     %d\n", this_->data[this_->len]);
     }
     else {
@@ -280,8 +283,8 @@ void stack_dump(const stack *this_)
 stack_status stack_ctor(stack *this_)
 {
     this_->elemSize = sizeof(int);      //TODO
-    this_->capacity = -1;
-    this_->len = -1;
+    this_->capacity = SIZE_T_POISON;
+    this_->len      = SIZE_T_POISON;
     this_->logStream = stdout;          //TODO
     
     this_->dataWrapper = (int*)calloc(STACK_STARTING_LEN + 2 * WRAPPER_SIZE, this_->elemSize);
@@ -289,7 +292,7 @@ stack_status stack_ctor(stack *this_)
     if (!this_->dataWrapper) {
         #ifdef STACK_USE_PTR_POISON
             this_->dataWrapper = (int*)DEAD_STRUCT_PTR;
-            this_->data = (int*)DEAD_STRUCT_PTR;
+            this_->data        = (int*)DEAD_STRUCT_PTR;
         #endif
 
         this_->status = BAD_MEM_ALLOC;
@@ -317,7 +320,7 @@ stack_status stack_ctor(stack *this_)
 }   
 
 
-stack_status stack_dtor(stack *this_)
+stack_status stack_dtor(stack *this_)           //TODO think about dtor warnings being silent
 {
     if (!ptrValid((void*)this_)) {
         return BAD_SELF_PTR;
@@ -331,8 +334,8 @@ stack_status stack_dtor(stack *this_)
     #endif
 
 
-    this_->capacity = -1;
-    this_->len = -1;
+    this_->capacity = SIZE_T_POISON;
+    this_->len      = SIZE_T_POISON;
     free(this_->dataWrapper);
     
     #ifdef STACK_USE_PTR_POISON
@@ -357,57 +360,6 @@ stack_status stack_push(stack *this_, int item)
     {
         const size_t newCapacity = stack_expandFactorCalc(this_->capacity);
         stack_reallocate(this_, newCapacity);
-        /*
-        int *newDataWrapper = (int*)realloc(this_->dataWrapper, (newCapacity + 2 * WRAPPER_SIZE) * this_->elemSize);
-        if (newDataWrapper == NULL) // reallocation failed
-        {
-            assert(!"Not emplemented yet!");            //TODO
-
-            newDataWrapper = (int*)calloc(newCapacity, this_->elemSize);
-            if (!newDataWrapper) {
-                #ifdef STACK_USE_PTR_POISON
-                    newDataWrapper = (int*)INVALID_PTR;
-                #endif
-                return BAD_MEM_ALLOC;
-            }
-            memcpy(newDataWrapper, this_->dataWrapper, (WRAPPER_SIZE + this_->capacity) * this_->elemSize);
-            free(this_->dataWrapper);
-            this_->data = newDataWrapper + WRAPPER_SIZE;
-            this_->dataWrapper = newDataWrapper;
-
-            #ifdef STACK_USE_POISON
-                for (size_t i = this_->capacity; i < newCapacity; ++i)
-                    this_->data[i] = ELEM_POISON;
-            #endif
-
-            #ifdef STACK_USE_WRAPPER
-                for (size_t i = 0; i < WRAPPER_SIZE; ++i)
-                    this_->data[newCapacity + i] = WRAPPER_POISON;
-            #endif
-
-            this_->capacity = newCapacity;
-        }
-        else 
-        {
-            if (this_->dataWrapper != newDataWrapper) {
-                this_->dataWrapper = newDataWrapper;
-                this_->data = this_->dataWrapper + WRAPPER_SIZE;
-            }
-
-            #ifdef STACK_USE_POISON
-                for (size_t i = this_->capacity; i < newCapacity; ++i)
-                    this_->data[i] = ELEM_POISON;
-            #endif
-
-            #ifdef STACK_USE_WRAPPER
-                for (size_t i = 0; i < WRAPPER_SIZE; ++i) {
-                    this_->data[i + newCapacity] = WRAPPER_POISON;    
-                }
-            #endif
-
-            this_->capacity = newCapacity;
-        }
-        */
     }
     
 
@@ -449,7 +401,7 @@ stack_status stack_pop(stack *this_, int* item)
     *item = this_->data[this_->len];
     
     #ifdef STACK_USE_POISON             //TODO do smth else?
-        if (*item == ELEM_POISON)
+        if (*item == ELEM_POISON)                               
             assert(!"Accessed uninitilized element");
         this_->data[this_->len] = ELEM_POISON;
     #endif
