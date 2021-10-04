@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <string.h>
 
+#include <nmmintrin.h>
+#include <inttypes.h>
+#define __STDC_FORMAT_MACROS
+
 #include "stack-config.h"
 
 
@@ -18,7 +22,7 @@
 
 static const char LOG_DELIM[] = "===========================";
 
-static const size_t STACK_STARTING_LEN = 2;
+static const size_t STACK_STARTING_CAPACITY = 2;
 
 static const double EXPAND_FACTOR = 1.5;
 static const double SHRINKAGE_FACTOR = 3;         
@@ -32,6 +36,8 @@ static const double SHRINKAGE_FACTOR = 3;
     #define STACK_USE_POISON
     #define STACK_USE_PTR_POISON
     #define STACK_USE_CANARY
+    #define STACK_USE_STRUCT_HASH
+    #define STACK_USE_DATA_HASH
     #define STACK_VERBOSE 2
 #endif
 
@@ -64,6 +70,7 @@ static const size_t SIZE_T_POISON = -13;
     #define STACK_VERBOSE 0
 #endif
 
+
 #ifndef CANARY_TYPE
     typedef ULL CANARY_TYPE;
 #endif
@@ -90,9 +97,9 @@ enum stack_status_enum {
 // Advanced debug functions
 
 #ifdef STACK_USE_POISON
-    bool isPoisoned(STACK_TYPE *elem)                       //TODO add POISONED_ELEM
+    bool isPoisoned(STACK_TYPE *elem)                       //TODO move to memcmp
     {
-        for (size_t i = 0; i < sizeof(STACK_TYPE); ++i)
+        for (size_t i = 0; i < sizeof(STACK_TYPE); ++i)     
             if (((char*)elem)[i] != ELEM_POISON)
                 return false;
         return true;
@@ -147,14 +154,14 @@ bool ptrValid(const void* ptr)         //TODO add some additional checks?
 #endif
 
 #ifndef NDEBUG
-#define STACK_PTR_VALIDATE() {                                  \
-    if (!ptrValid((void*)this_))  {                              \
-        STACK_LOG_TO_STREAM(this_, stderr, "Recieved bad ptr");   \
-        return BAD_SELF_PTR;                                       \
-    }                                                               \
+#define STACK_PTR_VALIDATE(this__) {                                  \
+    if (!ptrValid((void*)this__))  {                                   \
+        STACK_LOG_TO_STREAM(this__, stderr, "Recieved bad ptr");        \
+        return BAD_SELF_PTR;                                             \
+    }                                                                     \
 }
 #else
-#define STACK_PTR_VALIDATE() {}
+#define STACK_PTR_VALIDATE(this__) {}
 #endif
 
 //===========================================
@@ -197,7 +204,7 @@ static size_t stack_allocated_size(size_t capacity)
 struct stack                
 {
     #ifdef STACK_USE_CANARY
-        ULL leftCanary[CANARY_WRAPPER_LEN];
+        CANARY_TYPE leftCanary[CANARY_WRAPPER_LEN];
     #endif
     
     CANARY_TYPE *dataWrapper;
@@ -208,9 +215,17 @@ struct stack
     stack_status status;
 
     FILE *logStream;
+    
+    #ifdef STACK_USE_STRUCT_HASH
+        uint64_t structHash;
+    #endif
+
+    #ifdef STACK_USE_DATA_HASH
+        uint64_t dataHash;
+    #endif
 
     #ifdef STACK_USE_CANARY
-        ULL rightCanary[CANARY_WRAPPER_LEN];
+        CANARY_TYPE rightCanary[CANARY_WRAPPER_LEN];
     #endif
 
 } typedef stack;
@@ -226,9 +241,11 @@ stack_status stack_pop(stack *this_, int* item);
 
 stack_status stack_healthCheck(stack *this_);  
 
-void stack_dump(const stack *this_);
+uint64_t stack_calculateHash(stack *this_);
 
-void stack_dumpToStream(const stack *this_, FILE *out);
+stack_status stack_dump(const stack *this_);
+
+stack_status stack_dumpToStream(const stack *this_, FILE *out);
 
 stack_status stack_reallocate(stack *this_, const size_t newCapacity);
 
@@ -242,7 +259,7 @@ stack_status stack_ctor(stack *this_)
     this_->len      = SIZE_T_POISON;
     this_->logStream = stdout;          //TODO
     
-    this_->dataWrapper = (CANARY_TYPE*)calloc(stack_allocated_size(STACK_STARTING_LEN), sizeof(char));
+    this_->dataWrapper = (CANARY_TYPE*)calloc(stack_allocated_size(STACK_STARTING_CAPACITY), sizeof(char));
 
     if (!this_->dataWrapper) {
         #ifdef STACK_USE_PTR_POISON
@@ -255,7 +272,7 @@ stack_status stack_ctor(stack *this_)
     }
 
     this_->data = (STACK_TYPE*)(this_->dataWrapper + CANARY_WRAPPER_LEN);
-    this_->capacity = STACK_STARTING_LEN;
+    this_->capacity = STACK_STARTING_CAPACITY;               //TODO rename to CAPACITY
     this_->len = 0;
     this_->status = OK;
 
@@ -276,9 +293,9 @@ stack_status stack_ctor(stack *this_)
 }   
 
 
-stack_status stack_dtor(stack *this_)           //TODO think about dtor warnings being silent
+stack_status stack_dtor(stack *this_)           
 {
-    STACK_PTR_VALIDATE();
+    STACK_PTR_VALIDATE(this_);          
 
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
@@ -304,7 +321,7 @@ stack_status stack_dtor(stack *this_)           //TODO think about dtor warnings
 
 stack_status stack_push(stack *this_, int item)
 {
-    STACK_PTR_VALIDATE();
+    STACK_PTR_VALIDATE(this_);
 
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
@@ -341,7 +358,7 @@ stack_status stack_push(stack *this_, int item)
 
 stack_status stack_pop(stack *this_, int* item)
 {
-    STACK_PTR_VALIDATE();
+    STACK_PTR_VALIDATE(this_);
 
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
@@ -361,8 +378,8 @@ stack_status stack_pop(stack *this_, int* item)
     #endif
 
     #ifdef STACK_USE_CANARY
-    //    if (isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
-    //         STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
+        // if (isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
+        //     STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
     #endif
     
     #ifdef AUTO_SHRINK
@@ -418,13 +435,15 @@ stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 }
 
 
-void stack_dumpToStream(const stack *this_, FILE *out)
+stack_status stack_dumpToStream(const stack *this_, FILE *out)
 {
+    STACK_PTR_VALIDATE(this_);
+
     fprintf(out, "%s\n", LOG_DELIM);
     fprintf(out, "| Stack [%p] :\n", this_);
     fprintf(out, "|----------------\n");
 
-    fprintf(out, "| Current status = %d\n", this_->status); //TODO print active status flags
+    fprintf(out, "| Current status = %d\n", this_->status); 
     if (this_->status & BAD_SELF_PTR)
         fprintf(out, "| Bad self ptr \n");
     if (this_->status & BAD_MEM_ALLOC)
@@ -491,11 +510,13 @@ void stack_dumpToStream(const stack *this_, FILE *out)
         fprintf(out, "|  }\n");
     }
     fprintf(out, "%s\n", LOG_DELIM);
+
+    return this_->status;
 }
 
-void stack_dump(const stack *this_) 
+stack_status stack_dump(const stack *this_) 
 {
-    stack_dumpToStream(this_, this_->logStream);
+    return stack_dumpToStream(this_, this_->logStream);
 }
 
 stack_status stack_healthCheck(stack *this_)    //TODO
@@ -558,4 +579,41 @@ stack_status stack_healthCheck(stack *this_)    //TODO
 }
 
 
+#ifdef STACK_USE_STRUCT_HASH
+uint64_t stack_calculateStructHash(stack *this_)
+{
+    assert(ptrValid(this_));
+
+    uint64_t hash = 0;
+
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->dataWrapper));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->data));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->dataWrapper));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->capacity));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->len));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->status));
+    hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
+    
+    #ifdef STACK_USE_DATA_HASH
+        hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
+    #endif
+
+    return hash;
+}
+#endif
+
+
+#ifdef STACK_USE_DATA_HASH
+stack_status stack_calculateDataHash(stack *this_)
+{
+    assert(ptrValid(this_));
+
+    uint64_t hash = 0;
+
+    for (size_t i = 0; i < this_->len; ++i) {
+        hash = _mm_crc32_u64(hash, this_->data[i]);       //TODO make it generalized
+    }
+
+    return hash;
+}
 #endif
