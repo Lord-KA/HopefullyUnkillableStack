@@ -59,6 +59,24 @@ on:
 env:
   BUILD_TYPE: Release
 
-jobs:""")
+jobs:
+  release-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Release
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+
+""")
 for elem in combos:
     printoption(elem)
