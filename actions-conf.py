@@ -14,10 +14,10 @@ def printoption(arr):
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}""", end=' ')
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}""", end=' ')
 
     for elem in arr:
-        print(" -D " + elem, end=' ')
+        print(" -D " + elem, end='')
 
     print(""""
 
