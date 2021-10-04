@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -36,7 +36,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -53,7 +53,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -70,7 +70,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -87,7 +87,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -104,7 +104,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -121,7 +121,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -138,7 +138,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -155,7 +155,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -172,7 +172,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -189,7 +189,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -206,7 +206,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -223,7 +223,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -240,7 +240,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -257,7 +257,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -274,7 +274,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -291,7 +291,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -308,7 +308,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -325,7 +325,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -342,7 +342,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -359,7 +359,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -376,7 +376,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -393,7 +393,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -410,7 +410,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -427,7 +427,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -444,7 +444,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -461,7 +461,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -478,7 +478,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_PTR_POISON  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -495,7 +495,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -512,7 +512,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS=" ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS= " ${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON  -D STACK_USE_CANARY  -D STACK_USE_STRUCT_HASH  -D STACK_USE_DATA_HASH "
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
