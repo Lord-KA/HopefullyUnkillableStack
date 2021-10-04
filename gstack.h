@@ -527,8 +527,12 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
         fprintf(out, "| Capacity       = %zu\n", this_->capacity);
         fprintf(out, "| Len            = %zu\n", this_->len);
         fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
-        fprintf(out, "| Struct hash    = %zu\n", this_->structHash);
-        fprintf(out, "| Data hash      = %zu\n", this_->dataHash);
+        #ifdef STACK_USE_STRUCT_HASH
+            fprintf(out, "| Struct hash    = %zu\n", this_->structHash);
+        #endif
+        #ifdef STACK_USE_DATA_HASH
+            fprintf(out, "| Data hash      = %zu\n", this_->dataHash);
+        #endif
         fprintf(out, "|   {\n");
 
         #ifdef STACK_USE_CANARY                    //TODO read about graphviz 
