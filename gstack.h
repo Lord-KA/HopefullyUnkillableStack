@@ -16,6 +16,8 @@
 //===========================================
 // Stack options configuration
 
+struct stack;
+
 #ifndef ULL
 #define ULL unsigned long long
 #endif
@@ -88,7 +90,10 @@ enum stack_status_enum {
      LEFT_STRUCT_CANARY_CORRUPTED = 0b0001000000,
     RIGHT_STRUCT_CANARY_CORRUPTED = 0b0010000000,
        LEFT_DATA_CANARY_CORRUPTED = 0b0100000000,
-      RIGHT_DATA_CANARY_CORRUPTED = 0b1000000000
+      RIGHT_DATA_CANARY_CORRUPTED = 0b1000000000,
+
+    BAD_STRUCT_HASH = 0b010000000000,
+    BAD_DATA_HASH   = 0b100000000000
 };
 
 
@@ -130,6 +135,15 @@ bool ptrValid(const void* ptr)         //TODO add some additional checks?
     }
 #endif
 
+#ifdef STACK_USE_STRUCT_HASH
+uint64_t stack_calculateStructHash(stack *this_);
+#endif
+
+
+#ifdef STACK_USE_DATA_HASH
+stack_status stack_calculateDataHash(stack *this_);
+#endif
+
 
 #define  LEFT_CANARY_WRAPPER (this_->dataWrapper)
 #define RIGHT_CANARY_WRAPPER ((CANARY_TYPE*)((char*)this_->dataWrapper + CANARY_WRAPPER_LEN * sizeof(CANARY_TYPE) + this_->capacity * sizeof(STACK_TYPE)))
@@ -162,6 +176,14 @@ bool ptrValid(const void* ptr)         //TODO add some additional checks?
 }
 #else
 #define STACK_PTR_VALIDATE(this__) {}
+#endif
+
+#ifdef STACK_USE_DATA_HASH
+#define STACK_RECALCULATE_DATA_HASH(this_) {         \
+    this_->dataHash = stack_calculateDataHash(this_); \
+}
+#else
+#define STACK_RECALCULATE_DATA_HASH(this_) {}
 #endif
 
 //===========================================
@@ -289,6 +311,14 @@ stack_status stack_ctor(stack *this_)
         memset((char*)this_->data, ELEM_POISON, this_->capacity * sizeof(STACK_TYPE));
     #endif
 
+    #ifdef STACK_USE_DATA_HASH
+        this_->dataHash = stack_calculateDataHash(this_);
+    #endif
+
+    #ifdef STACK_USE_STRUCT_HASH
+        this_->structHash = stack_calculateStructHash(this_);
+    #endif
+
     return STACK_HEALTH_CHECK(this_);
 }   
 
@@ -352,6 +382,15 @@ stack_status stack_push(stack *this_, int item)
     this_->data[this_->len] = item;
     this_->len += 1;
 
+    #ifdef STACK_USE_DATA_HASH
+        this_->dataHash = stack_calculateDataHash(this_);
+    #endif
+
+    #ifdef STACK_USE_STRUCT_HASH
+        this_->structHash = stack_calculateStructHash(this_);
+    #endif
+
+
     return STACK_HEALTH_CHECK(this_);
 }
 
@@ -390,6 +429,15 @@ stack_status stack_pop(stack *this_, int* item)
             stack_reallocate(this_, newCapacity);
         }
     #endif
+
+    #ifdef STACK_USE_DATA_HASH
+        this_->dataHash = stack_calculateDataHash(this_);
+    #endif
+
+    #ifdef STACK_USE_STRUCT_HASH
+        this_->structHash = stack_calculateStructHash(this_);
+    #endif
+
 
     return STACK_HEALTH_CHECK(this_);
 }
@@ -431,6 +479,15 @@ stack_status stack_reallocate(stack *this_, const size_t newCapacity)
         }
     #endif
 
+    #ifdef STACK_USE_DATA_HASH
+        this_->dataHash = stack_calculateDataHash(this_);
+    #endif
+
+    #ifdef STACK_USE_STRUCT_HASH
+        this_->structHash = stack_calculateStructHash(this_);
+    #endif
+
+
     return STACK_HEALTH_CHECK(this_);
 }
 
@@ -460,12 +517,18 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
         fprintf(out, "| Left data canary corrupted \n");
     if (this_->status & RIGHT_DATA_CANARY_CORRUPTED)
         fprintf(out, "| Right data canary corrupted \n");
+    if (this_->status & BAD_STRUCT_HASH)
+        fprintf(out, "| Bad structure hash, stack may be corrupted \n");
+    if (this_->status & BAD_DATA_HASH)
+        fprintf(out, "| Bad data hash, stack data may be corrupted \n");
 
     if (STACK_VERBOSE >= 1) {
         fprintf(out, "|----------------\n");
         fprintf(out, "| Capacity       = %zu\n", this_->capacity);
         fprintf(out, "| Len            = %zu\n", this_->len);
         fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
+        fprintf(out, "| Struct hash    = %zu\n", this_->structHash);
+        fprintf(out, "| Data hash      = %zu\n", this_->dataHash);
         fprintf(out, "|   {\n");
 
         #ifdef STACK_USE_CANARY                    //TODO read about graphviz 
@@ -572,6 +635,21 @@ stack_status stack_healthCheck(stack *this_)    //TODO
         }
     #endif
     
+    uint64_t hash;
+
+    #ifdef STACK_USE_DATA_HASH
+        hash = stack_calculateDataHash(this_);
+        if (this_->dataHash != hash) 
+            this_->status |= BAD_DATA_HASH;
+    #endif
+
+    #ifdef STACK_USE_STRUCT_HASH
+        hash = stack_calculateStructHash(this_);
+        if (this_->structHash != hash) 
+            this_->status |= BAD_STRUCT_HASH;
+    #endif
+
+
     if (this_->status)
         STACK_LOG_TO_STREAM(this_, out, "Problems found during healthcheck!");
 
@@ -610,10 +688,13 @@ stack_status stack_calculateDataHash(stack *this_)
 
     uint64_t hash = 0;
 
-    for (size_t i = 0; i < this_->len; ++i) {
-        hash = _mm_crc32_u64(hash, this_->data[i]);       //TODO make it generalized
+    for (char* iter = (char*)(this_->data); iter < (char*)(this_->data + this_->capacity); ++iter) {
+        hash = _mm_crc32_u8(hash, *iter);
     }
 
     return hash;
 }
+#endif
+
+
 #endif
