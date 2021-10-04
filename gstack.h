@@ -6,13 +6,27 @@
 #include <assert.h>
 #include <string.h>
 
+#include "stack-config.h"
+
+
+//===========================================
+// Stack options configuration
+
 #ifndef ULL
 #define ULL unsigned long long
 #endif
 
+static const char LOG_DELIM[] = "===========================";
 
-#define FULL_DEBUG //TODO
-// #define AUTO_SHRINK 
+static const size_t STACK_STARTING_LEN = 2;
+
+static const double EXPAND_FACTOR = 1.5;
+static const double SHRINKAGE_FACTOR = 3;         
+
+
+//===========================================
+// Debug options configuration
+
 
 #ifdef FULL_DEBUG
     #define STACK_USE_POISON
@@ -21,11 +35,6 @@
     #define STACK_VERBOSE 2
 #endif
 
-
-static const size_t STACK_STARTING_LEN = 2;
-
-static const double EXPAND_FACTOR = 2;// 1.5;
-static const double SHRINKAGE_FACTOR = 3;         
 
 #ifdef STACK_USE_PTR_POISON
     static const void     *INVALID_PTR = (void*)0xDEADC0DE1;
@@ -37,13 +46,13 @@ static const double SHRINKAGE_FACTOR = 3;
 static const size_t SIZE_T_POISON = -13;
 
 #ifdef STACK_USE_POISON
-    static const char ELEM_POISON    = 0xFA;           // add one-byte poison?
-    static const char FREED_POISON   = 0xFB;
+    static const char ELEM_POISON    = 0xFA;           // one-byte poison?
+    static const char FREED_POISON   = 0xFC;
 #endif
 
 #ifdef STACK_USE_CANARY   
-    static const ULL  LEFT_CANARY_POISON = 0xBADBEEF1;
-    static const ULL RIGHT_CANARY_POISON = 0xBADBEEF2;
+    static const ULL  LEFT_CANARY_POISON = 0xFEEDFACECAFEBEE9;
+    static const ULL RIGHT_CANARY_POISON = 0xFEEDFACECAFEBEE8;
     static const size_t CANARY_WRAPPER_LEN  = 3;
     
     static const ULL BAD_CANARY_MASK = 0b1111000000;
@@ -59,25 +68,6 @@ static const size_t SIZE_T_POISON = -13;
     typedef ULL CANARY_TYPE;
 #endif
  
-
-
-typedef int STACK_TYPE;
-
-static const char LOG_DELIM[] = "===========================";
-
-bool ptrValid(const void* ptr)         //TODO add some additional checks?
-{
-    if (ptr == NULL)
-        return false;
-
-    #ifdef STACK_USE_PTR_POISON
-        if ((size_t)ptr>>4 == (size_t)BAD_PTR_MASK)           //TODO read about NAN tagging / bit masks
-            return false;
-    #endif  
-
-    return true;
-}
-
 typedef int stack_status;
 
 enum stack_status_enum {
@@ -93,6 +83,116 @@ enum stack_status_enum {
        LEFT_DATA_CANARY_CORRUPTED = 0b0100000000,
       RIGHT_DATA_CANARY_CORRUPTED = 0b1000000000
 };
+
+
+
+//===========================================
+// Advanced debug functions
+
+#ifdef STACK_USE_POISON
+    bool isPoisoned(STACK_TYPE *elem)                       //TODO add POISONED_ELEM
+    {
+        for (size_t i = 0; i < sizeof(STACK_TYPE); ++i)
+            if (((char*)elem)[i] != ELEM_POISON)
+                return false;
+        return true;
+    }
+#endif
+
+bool ptrValid(const void* ptr)         //TODO add some additional checks?
+{
+    if (ptr == NULL)
+        return false;
+
+    #ifdef STACK_USE_PTR_POISON
+        if ((size_t)ptr>>4 == (size_t)BAD_PTR_MASK)           //TODO add system-check option
+            return false;
+    #endif  
+
+    return true;
+}
+
+#ifdef STACK_USE_CANARY
+    static bool isCanaryVal(void* ptr) 
+    {
+        if (*(CANARY_TYPE*)ptr == LEFT_CANARY_POISON)
+            return true;
+        if (*(CANARY_TYPE*)ptr == RIGHT_CANARY_POISON)
+            return true;
+        return false;
+    }
+#endif
+
+
+#define  LEFT_CANARY_WRAPPER (this_->dataWrapper)
+#define RIGHT_CANARY_WRAPPER ((CANARY_TYPE*)((char*)this_->dataWrapper + CANARY_WRAPPER_LEN * sizeof(CANARY_TYPE) + this_->capacity * sizeof(STACK_TYPE)))
+
+
+#define STACK_LOG_TO_STREAM(this_, out, message)                                              \
+{                                                                                              \
+    fprintf(out, "%s\n| %s\n", LOG_DELIM, message);                                             \
+    fprintf(out, "| called from func %s on line %d of file %s\n", __func__, __LINE__, __FILE__); \
+    stack_dumpToStream(this_, out);                                                               \
+}
+
+#ifndef NDEBUG
+#define STACK_HEALTH_CHECK(this_) ({                                                        \
+    if (stack_healthCheck(this_)) {                                                          \
+        fprintf(this_->logStream, "Probles found in healthcheck run from %s\n", __func__);    \
+    }                                                                                          \
+    this_->status;                                                                              \
+})
+#else
+#define STACK_HEALTH_CHECK(this_) {}
+#endif
+
+#ifndef NDEBUG
+#define STACK_PTR_VALIDATE() {                                  \
+    if (!ptrValid((void*)this_))  {                              \
+        STACK_LOG_TO_STREAM(this_, stderr, "Recieved bad ptr");   \
+        return BAD_SELF_PTR;                                       \
+    }                                                               \
+}
+#else
+#define STACK_PTR_VALIDATE() {}
+#endif
+
+//===========================================
+// Auxiliary stack functions
+
+static size_t stack_expandFactorCalc(size_t capacity)          
+{
+    #ifdef STACK_USE_CANARY
+        if (capacity <= 1)
+            return 2 * sizeof(CANARY_TYPE);
+        return (((size_t)(capacity * EXPAND_FACTOR) - 1) / sizeof(CANARY_TYPE) + 1) * sizeof(CANARY_TYPE);        // formula for least denominator of sizeof(CANARY_TYPE), that is > new capacity
+    #else
+        if (capacity <= 1)
+            return 2;
+        return capacity * EXPAND_FACTOR;
+    #endif 
+}
+
+static size_t stack_shrinkageFactorCalc(size_t capacity)
+{
+    #ifdef STACK_USE_CANARY
+        if (capacity <= 1)          //TODO think if it is a good practice
+            return 2 * sizeof(CANARY_TYPE);
+        return (size_t)(capacity * SHRINKAGE_FACTOR) / sizeof(CANARY_TYPE) * sizeof(CANARY_TYPE);               // formula for greatest denominator of sizeof(CANARY_TYPE), that is < new capacity
+    #else
+        if (capacity <= 1)
+            return 2;
+        return capacity * SHRINKAGE_FACTOR;
+    #endif
+}
+
+static size_t stack_allocated_size(size_t capacity) 
+{
+    return (capacity * sizeof(STACK_TYPE) + 2 * CANARY_WRAPPER_LEN * sizeof(CANARY_TYPE));
+}
+
+//===========================================
+// Stack structure
 
 struct stack                
 {
@@ -116,260 +216,25 @@ struct stack
 } typedef stack;
 
 
-#ifdef STACK_USE_POISON
-    bool isPoisoned(STACK_TYPE *elem)                       //TODO add POISONED_ELEM
-    {
-        for (size_t i = 0; i < sizeof(STACK_TYPE); ++i)
-            if (((char*)elem)[i] != ELEM_POISON)
-                return false;
-        return true;
-    }
-#endif
+stack_status stack_ctor(stack *this_);
+
+stack_status stack_dtor(stack *this_);
+
+stack_status stack_push(stack *this_, int item);
+
+stack_status stack_pop(stack *this_, int* item);
+
+stack_status stack_healthCheck(stack *this_);  
+
+void stack_dump(const stack *this_);
 
 void stack_dumpToStream(const stack *this_, FILE *out);
 
-stack_status stack_healthCheck(stack *this_);
+stack_status stack_reallocate(stack *this_, const size_t newCapacity);
 
 
-static size_t stack_expandFactorCalc(size_t capacity)          
-{
-    if (capacity <= 1)
-        return 2;
-    return capacity * EXPAND_FACTOR;
-}
-
-static size_t stack_shrinkageFactorCalc(size_t capacity)
-{
-    if (capacity <= 1)          //TODO think if it is a good practice
-        return 2;
-    return capacity * SHRINKAGE_FACTOR;
-}
-
-#ifdef STACK_USE_CANARY
-    static bool isCanaryVal(void* ptr) 
-    {
-        if (*(CANARY_TYPE*)ptr == LEFT_CANARY_POISON)
-            return true;
-        if (*(CANARY_TYPE*)ptr == RIGHT_CANARY_POISON)
-            return true;
-        return false;
-    }
-#endif
-
-#define  LEFT_CANARY_WRAPPER (this_->dataWrapper)
-#define RIGHT_CANARY_WRAPPER ((CANARY_TYPE*)((char*)this_->dataWrapper + CANARY_WRAPPER_LEN * sizeof(CANARY_TYPE) + this_->capacity * sizeof(STACK_TYPE)))
-
-
-#define STACK_LOG_TO_STREAM(this_, out, message)                                              \
-{                                                                                              \
-    fprintf(out, "%s\n| %s\n", LOG_DELIM, message);                                             \
-    fprintf(out, "| called from func %s on line %d of file %s\n", __func__, __LINE__, __FILE__); \
-    stack_dumpToStream(this_, out);                                                               \
-}
-
-#define STACK_HEALTH_CHECK(this_) ({ \
-    if (stack_healthCheck(this_)) { \
-        fprintf(this_->logStream, "Probles found in healthcheck run from %s\n", __func__);  \
-    }   \
-    this_->status;  \
-})
-
-static size_t stack_allocated_size(size_t capacity) 
-{
-    return (capacity * sizeof(STACK_TYPE) + 2 * CANARY_WRAPPER_LEN * sizeof(CANARY_TYPE));
-}
-
-stack_status stack_reallocate(stack *this_, const size_t newCapacity)
-{
-    STACK_HEALTH_CHECK(this_);
-    #ifdef STACK_USE_POISON
-        if (newCapacity < this_->capacity) 
-        {
-            memset((char*)(this_->data + newCapacity), FREED_POISON, (this_->capacity - newCapacity) * sizeof(STACK_TYPE));
-            // for (size_t i = newCapacity; i < this_->capacity; ++i)
-            //     this_->data[i] = FREED_POISON;
-        }
-    #endif
-
-    CANARY_TYPE *newDataWrapper = (CANARY_TYPE*)realloc(this_->dataWrapper, stack_allocated_size(newCapacity));
-    if (newDataWrapper == NULL)             // reallocation failed
-    {
-        #ifdef STACK_USE_PTR_POISON
-            newDataWrapper = (CANARY_TYPE*)INVALID_PTR;
-        #endif
-        return BAD_MEM_ALLOC;
-    }
-
-    if (this_->dataWrapper != newDataWrapper) { 
-        this_->dataWrapper = newDataWrapper;
-        this_->data = (STACK_TYPE*)(this_->dataWrapper + CANARY_WRAPPER_LEN);
-    }
-
-    #ifdef STACK_USE_POISON
-        memset((char*)(this_->data + this_->capacity), ELEM_POISON, (newCapacity - this_->capacity) * sizeof(STACK_TYPE));
-    #endif
-
-    this_->capacity = newCapacity;
-
-    #ifdef STACK_USE_CANARY
-        for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {
-            RIGHT_CANARY_WRAPPER[i] = RIGHT_CANARY_POISON;
-        }
-    #endif
-
-    return STACK_HEALTH_CHECK(this_);
-}
-
-
-stack_status stack_healthCheck(stack *this_)    //TODO
-{
-    if (!ptrValid((void*)this_)) {
-        return BAD_SELF_PTR;
-    }
-
-    // if (this_->status)
-    //     return this_->status;
-
-    FILE *out = this_->logStream;
-
-    if ((this_->capacity == 0 || this_->capacity == SIZE_T_POISON) &&                     // checks if properly empty
-        (this_->len      == 0 || this_->len      == SIZE_T_POISON)) 
-    {
-    #ifdef STACK_USE_PTR_POISON                                             //TODO think of a better macro wrap
-        if (this_->dataWrapper == (CANARY_TYPE*)FREED_PTR   &&
-            this_->data        ==  (STACK_TYPE*)FREED_PTR)                  //TODO think if invalid would fit here 
-        {        
-            this_->status = OK;
-            return OK;
-        }
-    #else
-        this_->status = OK;
-        return OK;
-    #endif
-    }
-
-    if (this_->len > this_->capacity || this_->capacity > 1e20)
-        this_->status |= INTEGRITY_VIOLATED;
-
-    #ifdef STACK_USE_CANARY
-    for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {             
-        if (LEFT_CANARY_WRAPPER[i] != LEFT_CANARY_POISON) {      
-            // STACK_LOG_TO_STREAM(this_, out, "Left data canary is corrupt!");
-            this_->status |= LEFT_DATA_CANARY_CORRUPTED;
-        }
-        
-        if (RIGHT_CANARY_WRAPPER[i] != RIGHT_CANARY_POISON) {
-            // STACK_LOG_TO_STREAM(this_, out, "Right data canary is corrupt!");
-            this_->status |= RIGHT_DATA_CANARY_CORRUPTED;
-            }
-        
-        if (this_->leftCanary[i] != LEFT_CANARY_POISON) {
-            // STACK_LOG_TO_STREAM(this_, out, "Left struct canary is corrupt!");
-            this_->status |= LEFT_STRUCT_CANARY_CORRUPTED;
-        }
-
-        if (this_->rightCanary[i] != RIGHT_CANARY_POISON) {
-            // STACK_LOG_TO_STREAM(this_, out, "Right struct canary is corrupt!");
-            this_->status |= RIGHT_STRUCT_CANARY_CORRUPTED;
-        }
- 
-    }
-
-        
-    #endif
-
-    #ifdef STACK_USE_POISON
-        for (size_t i = this_->len; i < this_->capacity; ++i) {
-            if (!isPoisoned(&this_->data[i])) {
-                // STACK_LOG_TO_STREAM(this_, out, "Data is corrupt!");
-                this_->status |= DATA_INTEGRITY_VIOLATED;
-            }
-        }
-    #endif
-    
-    if (this_->status)
-        STACK_LOG_TO_STREAM(this_, out, "Problems found during healthcheck!");
-
-    return this_->status;
-}
-
-
-
-void stack_dumpToStream(const stack *this_, FILE *out)
-{
-    fprintf(out, "%s\n", LOG_DELIM);
-    fprintf(out, "| Stack [%p] :\n", this_);
-    fprintf(out, "|----------------\n");
-    fprintf(out, "| Current status = %d\n", this_->status); //TODO print active status flags
-    if (this_->status & BAD_SELF_PTR)
-        fprintf(out, "| Bad self ptr \n");
-    if (this_->status & BAD_MEM_ALLOC)
-        fprintf(out, "| Bad memory allocation \n");
-    if (this_->status & INTEGRITY_VIOLATED)
-        fprintf(out, "| Stack integrity violated \n");
-    if (this_->status & DATA_INTEGRITY_VIOLATED)
-        fprintf(out, "| Data integrity violated \n");
-    if (this_->status & LEFT_STRUCT_CANARY_CORRUPTED)
-        fprintf(out, "| Left structure canary corrupted \n");
-    if (this_->status & RIGHT_STRUCT_CANARY_CORRUPTED)
-        fprintf(out, "| Right structure canary corrupted \n");
-    if (this_->status & LEFT_DATA_CANARY_CORRUPTED)
-        fprintf(out, "| Left data canary corrupted \n");
-    if (this_->status & RIGHT_DATA_CANARY_CORRUPTED)
-        fprintf(out, "| Right data canary corrupted \n");
-    fprintf(out, "|----------------\n");
-    fprintf(out, "| Capacity       = %zu\n", this_->capacity);
-    fprintf(out, "| Len            = %zu\n", this_->len);
-    fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
-    fprintf(out, "|   {\n");
-
-    #ifdef STACK_USE_CANARY                    //TODO read about graphviz 
-        for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {                 
-                fprintf(out, "| w   %llx\n", LEFT_CANARY_WRAPPER[i]);           // `w` for Wrappera    
-        }
-    #endif
-
-    for (size_t i = 0; i < this_->len; ++i) {
-            fprintf(out, "| *   %d\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
-    }
-
-    bool printAll = false;
-
-    #ifdef STACK_USE_POISON
-        for (size_t i = this_->len; i < this_->capacity; ++i) {
-            if (!isPoisoned(&this_->data[i]))
-                printAll = true;
-        }
-    #endif  
-
-    if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens outp of the same poison
-        fprintf(out, "|     %x\n", this_->data[this_->len]);
-        fprintf(out, "|     %x\n", this_->data[this_->len]);
-        fprintf(out, "|     %x\n", this_->data[this_->len]);
-        fprintf(out, "|     ...\n");
-        fprintf(out, "|     %x\n", this_->data[this_->len]);
-        fprintf(out, "|     %x\n", this_->data[this_->len]);
-    }
-    else {
-        for (size_t i = this_->len; i < this_->capacity; ++i) {
-            fprintf(out, "|     %x\n", this_->data[i]);
-        }
-    }
-
-    #ifdef STACK_USE_CANARY
-        for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {
-                fprintf(out, "| w   %llx\n", RIGHT_CANARY_WRAPPER[i]);
-        }
-    #endif
-
-    fprintf(out, "|  }\n");
-    fprintf(out, "%s\n", LOG_DELIM);
-}
-
-void stack_dump(const stack *this_) 
-{
-    stack_dumpToStream(this_, this_->logStream);
-}
+//===========================================
+// Stack implementation
 
 stack_status stack_ctor(stack *this_)
 {
@@ -405,8 +270,6 @@ stack_status stack_ctor(stack *this_)
 
     #ifdef STACK_USE_POISON
         memset((char*)this_->data, ELEM_POISON, this_->capacity * sizeof(STACK_TYPE));
-        // for (size_t i = 0; i < this_->capacity; ++i)
-        //     this_->data[i] = ELEM_POISON;
     #endif
 
     return STACK_HEALTH_CHECK(this_);
@@ -415,9 +278,8 @@ stack_status stack_ctor(stack *this_)
 
 stack_status stack_dtor(stack *this_)           //TODO think about dtor warnings being silent
 {
-    if (!ptrValid((void*)this_)) {
-        return BAD_SELF_PTR;
-    }
+    STACK_PTR_VALIDATE();
+
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
 
@@ -442,9 +304,8 @@ stack_status stack_dtor(stack *this_)           //TODO think about dtor warnings
 
 stack_status stack_push(stack *this_, int item)
 {
-    if (!ptrValid((void*)this_)) {
-        return BAD_SELF_PTR;
-    }
+    STACK_PTR_VALIDATE();
+
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
     
@@ -480,9 +341,8 @@ stack_status stack_push(stack *this_, int item)
 
 stack_status stack_pop(stack *this_, int* item)
 {
-    if (!ptrValid((void*)this_)) {
-        return BAD_SELF_PTR;
-    }
+    STACK_PTR_VALIDATE();
+
     if (STACK_HEALTH_CHECK(this_))
         return this_->status;
     
@@ -501,7 +361,7 @@ stack_status stack_pop(stack *this_, int* item)
     #endif
 
     #ifdef STACK_USE_CANARY
-    //    if (isCanaryVal(item))
+    //    if (isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
     //         STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
     #endif
     
@@ -515,6 +375,186 @@ stack_status stack_pop(stack *this_, int* item)
     #endif
 
     return STACK_HEALTH_CHECK(this_);
+}
+
+
+stack_status stack_reallocate(stack *this_, const size_t newCapacity)
+{
+    STACK_HEALTH_CHECK(this_);
+    #ifdef STACK_USE_POISON
+        if (newCapacity < this_->capacity) 
+        {
+            memset((char*)(this_->data + newCapacity), FREED_POISON, (this_->capacity - newCapacity) * sizeof(STACK_TYPE));
+        }
+    #endif
+
+    CANARY_TYPE *newDataWrapper = (CANARY_TYPE*)realloc(this_->dataWrapper, stack_allocated_size(newCapacity));
+    if (newDataWrapper == NULL)             // reallocation failed
+    {
+        #ifdef STACK_USE_PTR_POISON
+            newDataWrapper = (CANARY_TYPE*)INVALID_PTR;
+        #endif
+        return BAD_MEM_ALLOC;
+    }
+
+    if (this_->dataWrapper != newDataWrapper) { 
+        this_->dataWrapper = newDataWrapper;
+        this_->data = (STACK_TYPE*)(this_->dataWrapper + CANARY_WRAPPER_LEN);
+    }
+
+    #ifdef STACK_USE_POISON
+        memset((char*)(this_->data + this_->capacity), ELEM_POISON, (newCapacity - this_->capacity) * sizeof(STACK_TYPE));
+    #endif
+
+    this_->capacity = newCapacity;
+
+    #ifdef STACK_USE_CANARY
+        for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {
+            RIGHT_CANARY_WRAPPER[i] = RIGHT_CANARY_POISON;
+        }
+    #endif
+
+    return STACK_HEALTH_CHECK(this_);
+}
+
+
+void stack_dumpToStream(const stack *this_, FILE *out)
+{
+    fprintf(out, "%s\n", LOG_DELIM);
+    fprintf(out, "| Stack [%p] :\n", this_);
+    fprintf(out, "|----------------\n");
+
+    fprintf(out, "| Current status = %d\n", this_->status); //TODO print active status flags
+    if (this_->status & BAD_SELF_PTR)
+        fprintf(out, "| Bad self ptr \n");
+    if (this_->status & BAD_MEM_ALLOC)
+        fprintf(out, "| Bad memory allocation \n");
+    if (this_->status & INTEGRITY_VIOLATED)
+        fprintf(out, "| Stack integrity violated \n");
+    if (this_->status & DATA_INTEGRITY_VIOLATED)
+        fprintf(out, "| Data integrity violated \n");
+    if (this_->status & LEFT_STRUCT_CANARY_CORRUPTED)
+        fprintf(out, "| Left structure canary corrupted \n");
+    if (this_->status & RIGHT_STRUCT_CANARY_CORRUPTED)
+        fprintf(out, "| Right structure canary corrupted \n");
+    if (this_->status & LEFT_DATA_CANARY_CORRUPTED)
+        fprintf(out, "| Left data canary corrupted \n");
+    if (this_->status & RIGHT_DATA_CANARY_CORRUPTED)
+        fprintf(out, "| Right data canary corrupted \n");
+
+    if (STACK_VERBOSE >= 1) {
+        fprintf(out, "|----------------\n");
+        fprintf(out, "| Capacity       = %zu\n", this_->capacity);
+        fprintf(out, "| Len            = %zu\n", this_->len);
+        fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
+        fprintf(out, "|   {\n");
+
+        #ifdef STACK_USE_CANARY                    //TODO read about graphviz 
+            for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {                 
+                    fprintf(out, "| w   %llx\n", LEFT_CANARY_WRAPPER[i]);           // `w` for Wrappera    
+            }
+        #endif
+
+        for (size_t i = 0; i < this_->len; ++i) {
+                fprintf(out, "| *   %d\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
+        }
+
+        bool printAll = false;
+    
+        #ifdef STACK_USE_POISON
+            for (size_t i = this_->len; i < this_->capacity; ++i) {
+                if (!isPoisoned(&this_->data[i]))
+                    printAll = true;
+            }
+        #endif  
+
+        if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens outp of the same poison
+            fprintf(out, "|     %x\n", this_->data[this_->len]);
+            fprintf(out, "|     %x\n", this_->data[this_->len]);
+            fprintf(out, "|     %x\n", this_->data[this_->len]);
+            fprintf(out, "|     ...\n");
+            fprintf(out, "|     %x\n", this_->data[this_->len]);
+            fprintf(out, "|     %x\n", this_->data[this_->len]);
+        }
+        else {
+            for (size_t i = this_->len; i < this_->capacity; ++i) {
+                fprintf(out, "|     %x\n", this_->data[i]);
+            }
+        }
+
+        #ifdef STACK_USE_CANARY
+            for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {
+                    fprintf(out, "| w   %llx\n", RIGHT_CANARY_WRAPPER[i]);
+            }
+        #endif
+
+        fprintf(out, "|  }\n");
+    }
+    fprintf(out, "%s\n", LOG_DELIM);
+}
+
+void stack_dump(const stack *this_) 
+{
+    stack_dumpToStream(this_, this_->logStream);
+}
+
+stack_status stack_healthCheck(stack *this_)    //TODO
+{
+ 
+    FILE *out = this_->logStream;
+
+    if ((this_->capacity == 0 || this_->capacity == SIZE_T_POISON) &&                     // checks if properly empty
+        (this_->len      == 0 || this_->len      == SIZE_T_POISON)) 
+    {
+    #ifdef STACK_USE_PTR_POISON                                             //TODO think of a better macro wrap
+        if (this_->dataWrapper == (CANARY_TYPE*)FREED_PTR   &&
+            this_->data        ==  (STACK_TYPE*)FREED_PTR)                  //TODO think if invalid would fit here 
+        {        
+            this_->status = OK;
+            return OK;
+        }
+    #else
+        this_->status = OK;
+        return OK;
+    #endif
+    }
+
+    if (this_->len > this_->capacity || this_->capacity > 1e20)
+        this_->status |= INTEGRITY_VIOLATED;
+
+    #ifdef STACK_USE_CANARY
+    for (size_t i = 0; i < CANARY_WRAPPER_LEN; ++i) {             
+        if (LEFT_CANARY_WRAPPER[i] != LEFT_CANARY_POISON) {      
+            this_->status |= LEFT_DATA_CANARY_CORRUPTED;
+        }
+        
+        if (RIGHT_CANARY_WRAPPER[i] != RIGHT_CANARY_POISON) {
+            this_->status |= RIGHT_DATA_CANARY_CORRUPTED;
+            }
+        
+        if (this_->leftCanary[i] != LEFT_CANARY_POISON) {
+            this_->status |= LEFT_STRUCT_CANARY_CORRUPTED;
+        }
+
+        if (this_->rightCanary[i] != RIGHT_CANARY_POISON) {
+            this_->status |= RIGHT_STRUCT_CANARY_CORRUPTED;
+        }
+ 
+    }
+    #endif
+
+    #ifdef STACK_USE_POISON
+        for (size_t i = this_->len; i < this_->capacity; ++i) {
+            if (!isPoisoned(&this_->data[i])) {
+                this_->status |= DATA_INTEGRITY_VIOLATED;
+            }
+        }
+    #endif
+    
+    if (this_->status)
+        STACK_LOG_TO_STREAM(this_, out, "Problems found during healthcheck!");
+
+    return this_->status;
 }
 
 
