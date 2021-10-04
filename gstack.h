@@ -12,6 +12,7 @@
 
 #include "stack-config.h"
 
+#define NDEBUG
 
 //===========================================
 // Stack options configuration
@@ -164,7 +165,7 @@ stack_status stack_calculateDataHash(stack *this_);
     this_->status;                                                                              \
 })
 #else
-#define STACK_HEALTH_CHECK(this_) {}
+#define STACK_HEALTH_CHECK(this_) ({false;})
 #endif
 
 #ifndef NDEBUG
