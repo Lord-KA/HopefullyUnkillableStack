@@ -9,8 +9,6 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-
-	
   STACKUSEPOISON:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -27,7 +25,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -44,7 +41,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSECANARY:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -61,7 +57,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -78,7 +73,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -95,7 +89,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -112,7 +105,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSECANARY:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -129,7 +121,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -146,7 +137,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -163,7 +153,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSECANARY:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -180,7 +169,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -197,7 +185,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -214,7 +201,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -231,7 +217,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSECANARY-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -248,7 +233,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -265,7 +249,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -282,7 +265,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -299,7 +281,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -316,7 +297,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -333,7 +313,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSECANARY-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -350,7 +329,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -367,7 +345,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -384,7 +361,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -401,7 +377,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -418,7 +393,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -435,7 +409,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -452,7 +425,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -469,7 +441,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -486,7 +457,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -503,7 +473,6 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
-	
   STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10

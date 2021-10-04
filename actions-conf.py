@@ -2,7 +2,7 @@ from itertools import combinations
 
 
 def printoption(arr):
-    print("\t\n  ", end='')
+    print("  ", end='')
     for elem in arr[:-1]:
         print(elem.replace('_', ''), end='-')
     print(arr[-1].replace('_', ''), end=":\n")
@@ -59,6 +59,6 @@ on:
 env:
   BUILD_TYPE: Release
 
-jobs:\n""")
+jobs:""")
 for elem in combos:
     printoption(elem)
