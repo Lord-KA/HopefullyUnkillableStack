@@ -1,11 +1,15 @@
+#!/bin/python3
+
 from itertools import combinations
 
 
 def printoption(arr):
-    print("  ", end='')
+    if len(arr) == 0:
+        return 0
+    print("  ", end='', file=outp)
     for elem in arr[:-1]:
-        print(elem.replace('_', ''), end='-')
-    print(arr[-1].replace('_', ''), end=":\n")
+        print(elem.replace('_', ''), end='-', file=outp)
+    print(arr[-1].replace('_', ''), end=":\n", file=outp)
 
     print("""    runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -14,10 +18,10 @@ def printoption(arr):
     - uses: actions/checkout@v2
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}""", end=' ')
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}""", end=' ', file=outp)
 
     for elem in arr:
-        print(" -D " + elem, end='')
+        print(" -D " + elem, end='', file=outp)
 
     print(""""
 
@@ -26,11 +30,11 @@ def printoption(arr):
 
     - name: Test
       working-directory: ${{github.workspace}}/build/
-      run: ./stack-test""")
+      run: ./stack-test""", file=outp)
 
 
 inp = open("gstack-header.h", "r")
-
+outp = open(".github/workflows/cmake.yml", "w")
 
 inp = inp.read()
 
@@ -44,6 +48,8 @@ macro = []
 for line in inp:
     macro.append(line.split(' ')[-1])
 
+for line in macro:
+    print(line)
 
 combos = []  # list(combinations(macro, len(macro)))
 for i in range(1, len(macro)):
@@ -78,6 +84,6 @@ jobs:
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
 
-""")
+""", file=outp)
 for elem in combos:
     printoption(elem)
