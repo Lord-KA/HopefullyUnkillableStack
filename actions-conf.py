@@ -46,7 +46,7 @@ inp = inp[inp.find('\n') + 1:inp.rfind('\n')].split("\n")
 
 macro = []
 for line in inp:
-    macro.append(line.split(' ')[-1])
+    macro.append(line.strip().split(' ')[-1])
 
 for line in macro:
     print(line)

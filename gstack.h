@@ -19,27 +19,29 @@ bool ptrValid(const void* ptr)
             return false;
         }
     #endif  
+    
+    #ifdef STACK_USE_PTR_SYS_CHECK
+        #ifdef __unix__
+            size_t page_size = sysconf(_SC_PAGESIZE);
+            void *base = (void *)((((size_t)ptr) / page_size) * page_size);
+            return msync(base, page_size, MS_ASYNC) == 0;
+        #else 
+            #ifdef _WIN32
+                MEMORY_BASIC_INFORMATION mbi = {};
+                if (!VirtualQuery(ptr, &mbi, sizeof (mbi)))
+                    return false;
 
-    #ifdef __unix__
-        size_t page_size = sysconf(_SC_PAGESIZE);
-        void *base = (void *)((((size_t)ptr) / page_size) * page_size);
-        return msync(base, page_size, MS_ASYNC) == 0;
-    #else 
-        #ifdef _WIN32
-            MEMORY_BASIC_INFORMATION mbi = {};
-            if (!VirtualQuery(ptr, &mbi, sizeof (mbi)))
-                return false;
-
-            if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS))
-                return false;  // Guard page -> bad ptr
-
-            DWORD readRights = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY
-                | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
-
-            return (mbi.Protect & readRights) != 0;
-        #else
-            fprintf(stderr, "WARNING: your OS is unsupported, system pointer checks are diabled!\n");
-        #endif
+                if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS))
+                    return false;  // Guard page -> bad ptr
+    
+                DWORD readRights = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY
+                    | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+    
+                return (mbi.Protect & readRights) != 0;
+            #else
+                fprintf(stderr, "WARNING: your OS is unsupported, system pointer checks are diabled!\n");
+            #endif
+       #endif
     #endif
 
     return true;

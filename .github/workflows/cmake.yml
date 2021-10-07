@@ -123,6 +123,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSEPTRPOISON:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -203,6 +219,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPTRPOISON-STACKUSECANARY:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -267,6 +299,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -315,6 +363,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSECANARY-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -347,6 +411,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -356,6 +436,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -427,6 +539,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -475,6 +603,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -507,6 +651,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -516,6 +676,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -571,6 +763,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -603,6 +811,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -612,6 +836,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -651,6 +907,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -667,6 +939,38 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSECANARY-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECANARY-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -676,6 +980,54 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -731,6 +1083,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -763,6 +1131,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -772,6 +1156,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -811,6 +1227,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -827,6 +1259,38 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -836,6 +1300,54 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -875,6 +1387,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -884,6 +1412,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -907,6 +1467,54 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -916,6 +1524,70 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -955,6 +1627,22 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -964,6 +1652,38 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
@@ -987,6 +1707,54 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1003,6 +1771,70 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build/
       run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
   STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1012,6 +1844,198 @@ jobs:
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSECANARY-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSEPTRPOISON-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_PTR_POISON -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config Sanitizer
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build/
+      run: ./stack-test
+  STACKUSEPTRPOISON-STACKUSECANARY-STACKUSESTRUCTHASH-STACKUSEDATAHASH-STACKUSECAPACITYSYSCHECK-STACKUSEPTRSYSCHECK:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Sanitizer -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS}  -D STACK_USE_PTR_POISON -D STACK_USE_CANARY -D STACK_USE_STRUCT_HASH -D STACK_USE_DATA_HASH -D STACK_USE_CAPACITY_SYS_CHECK -D STACK_USE_PTR_SYS_CHECK"
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Sanitizer
