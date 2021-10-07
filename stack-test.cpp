@@ -79,7 +79,7 @@ TEST(PushPop, Random)
 
     stack_ctor(&S);
     
-    size_t iterations = rnd() % 5000000 + 100;
+    size_t iterations = rnd() % 50000 + 100;
     // iterations = 0;
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
