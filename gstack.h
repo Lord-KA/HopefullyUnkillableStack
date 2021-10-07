@@ -3,6 +3,7 @@
 
 #include "gstack-header.h"
 
+
 //===========================================
 // Advanced debug functions
 
@@ -14,10 +15,32 @@ bool ptrValid(const void* ptr)
     }
 
     #ifdef STACK_USE_PTR_POISON
-        if ((size_t)ptr>>4 == (size_t)STACK_BAD_PTR_MASK) {           //TODO add system-check option
+        if ((size_t)ptr>>4 == (size_t)STACK_BAD_PTR_MASK) {           
             return false;
         }
     #endif  
+
+    #ifdef __unix__
+        size_t page_size = sysconf(_SC_PAGESIZE);
+        void *base = (void *)((((size_t)ptr) / page_size) * page_size);
+        return msync(base, page_size, MS_ASYNC) == 0;
+    #else 
+        #ifdef _WIN32
+            MEMORY_BASIC_INFORMATION mbi = {};
+            if (!VirtualQuery(ptr, &mbi, sizeof (mbi)))
+                return false;
+
+            if (mbi.Protect & (PAGE_GUARD | PAGE_NOACCESS))
+                return false;  // Guard page -> bad ptr
+
+            DWORD readRights = PAGE_READONLY | PAGE_READWRITE | PAGE_WRITECOPY
+                | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+
+            return (mbi.Protect & readRights) != 0;
+        #else
+            fprintf(stderr, "WARNING: your OS is unsupported, system pointer checks are diabled!\n");
+        #endif
+    #endif
 
     return true;
 }
@@ -46,6 +69,30 @@ bool ptrValid(const void* ptr)
 #endif
 
 
+#ifdef STACK_USE_CAPACITY_SYS_CHECK
+    size_t stack_getRealCapacity(void *ptr) 
+    {
+        if (!ptrValid(ptr)) {
+            fprintf(stderr, "WARNING: getRealCapacity got a bad pointer!\n");
+            return STACK_SIZE_T_POISON;
+        }
+        size_t allocatedSize = 0;
+        #ifdef __unix__
+            allocatedSize = malloc_usable_size(ptr);
+        #else
+            #ifdef _WIN32
+                allocatedSize = _msize(ptr); 
+            #else
+                fprintf(stderr, "WARNING: your OS is unsupported, real capacity check is skipped!\n");
+                return STACK_SIZE_T_POISON;              
+            #endif
+        #endif
+
+        return (allocatedSize - 2 * STACK_CANARY_WRAPPER_LEN * sizeof(STACK_CANARY_TYPE)) / sizeof(STACK_TYPE);
+    }
+#endif
+
+
 //===========================================
 // Auxiliary stack functions
 
@@ -67,7 +114,7 @@ static size_t stack_expandFactorCalc(size_t capacity)
 static size_t stack_shrinkageFactorCalc(size_t capacity)
 {
     #ifdef STACK_USE_CANARY
-        if (capacity <= 1)          //TODO think if it is a good practice
+        if (capacity <= 1)          
             return 2 * sizeof(STACK_CANARY_TYPE);
         return (size_t)(capacity * STACK_SHRINKAGE_FACTOR) / sizeof(STACK_CANARY_TYPE) * sizeof(STACK_CANARY_TYPE);               // formula for greatest denominator of sizeof(STACK_CANARY_TYPE), that is < new capacity
     #else
@@ -109,7 +156,7 @@ stack_status stack_ctor(stack *this_)
     }
 
     this_->data = (STACK_TYPE*)(this_->dataWrapper + STACK_CANARY_WRAPPER_LEN);
-    this_->capacity = STACK_STARTING_CAPACITY;               //TODO rename to CAPACITY
+    this_->capacity = STACK_STARTING_CAPACITY;
     this_->len = 0;
     this_->status = STACK_OK;
 
@@ -143,8 +190,7 @@ stack_status stack_dtor(stack *this_)
 {
     STACK_PTR_VALIDATE(this_);          
 
-    if (STACK_HEALTH_CHECK(this_))
-        return this_->status;
+    STACK_HEALTH_CHECK(this_);
 
     #ifdef STACK_USE_POISON
         memset((char*)this_->dataWrapper, STACK_FREED_POISON, stack_allocated_size(this_->capacity));
@@ -153,6 +199,12 @@ stack_status stack_dtor(stack *this_)
 
     this_->capacity = STACK_SIZE_T_POISON;
     this_->len      = STACK_SIZE_T_POISON;
+
+    if (!ptrValid(this_->dataWrapper)) {
+        fprintf(this_->logStream, "ERROR: pointer to the data is invalid!\n");      //TODO think if dtor should be silent here too?
+        return STACK_BAD_DATA_PTR;
+    }
+
     free(this_->dataWrapper);
     
     #ifdef STACK_USE_PTR_POISON
@@ -173,10 +225,8 @@ stack_status stack_push(stack *this_, int item)
     
     FILE *out = this_->logStream;       //TODO
    
-    if (this_->len == this_->capacity) 
-    {
-        const size_t newCapacity = stack_expandFactorCalc(this_->capacity);
-        this_->status |= stack_reallocate(this_, newCapacity);
+    if (this_->len == this_->capacity) {
+        this_->status |= stack_reallocate(this_, stack_expandFactorCalc(this_->capacity));
     }
     
 
@@ -283,7 +333,8 @@ stack_status stack_reallocate(stack *this_, const size_t newCapacity)
     }
 
     #ifdef STACK_USE_POISON
-        memset((char*)(this_->data + this_->capacity), STACK_ELEM_POISON, (newCapacity - this_->capacity) * sizeof(STACK_TYPE));
+        if (newCapacity > this_->capacity)
+            memset((char*)(this_->data + this_->capacity), STACK_ELEM_POISON, (newCapacity - this_->capacity) * sizeof(STACK_TYPE));
     #endif
 
     this_->capacity = newCapacity;
@@ -336,10 +387,23 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
         fprintf(out, "| Bad structure hash, stack may be corrupted \n");
     if (this_->status & STACK_BAD_DATA_HASH)
         fprintf(out, "| Bad data hash, stack data may be corrupted \n");
+    if (this_->status & STACK_BAD_CAPACITY)
+        fprintf(out, "| Bad capacity, capacity value differs from the allocated one\n");
 
+    size_t capacity = this_->capacity;
+    #ifdef STACK_USE_CAPACITY_SYS_CHECK
+        capacity = stack_getRealCapacity(this_->dataWrapper);
+        if (capacity == STACK_SIZE_T_POISON) {
+            capacity = this_->capacity;
+        }
+    #endif
+ 
     if (STACK_VERBOSE >= 1) {
         fprintf(out, "|----------------\n");
         fprintf(out, "| Capacity       = %zu\n", this_->capacity);
+        #ifdef STACK_USE_CAPACITY_SYS_CHECK
+            fprintf(out, "| Real capacity  = %zu\n", capacity);
+        #endif
         fprintf(out, "| Len            = %zu\n", this_->len);
         fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
         #ifdef STACK_USE_STRUCT_HASH
@@ -352,24 +416,34 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
 
         #ifdef STACK_USE_CANARY                    //TODO read about graphviz 
             for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {                 
-                    fprintf(out, "| w   %llx\n", LEFT_CANARY_WRAPPER[i]);           // `w` for Wrappera    
+                    fprintf(out, "| l   %llx\n", LEFT_CANARY_WRAPPER[i]);           // `l` for left canary
             }
         #endif
+        
+        size_t cap = fmin(this_->len, capacity);          // in case structure is corrupt and len > capacity
 
-        for (size_t i = 0; i < this_->len; ++i) {
+        for (size_t i = 0; i < cap; ++i) {
                 fprintf(out, "| *   %d\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
         }
 
-        bool printAll = false;
+        bool printAll = true;
     
+        
         #ifdef STACK_USE_POISON
-            for (size_t i = this_->len; i < this_->capacity; ++i) {
-                if (!stack_isPoisoned(&this_->data[i]))
-                    printAll = true;
+            if (capacity == this_->capacity) {
+                printAll = false;
+                for (size_t i = this_->len; i < capacity; ++i) {
+                    if (!stack_isPoisoned(&this_->data[i]))
+                        printAll = true;
+                }
             }
         #endif  
+        
 
-        if (this_->capacity - this_->len > 10 && !printAll && STACK_VERBOSE > 1) {                // shortens outp of the same poison
+        if (capacity < this_->len)
+            printAll = true;
+
+        if (capacity - this_->len > 10 && !printAll) {                      // shortens outp of the same poison     
             fprintf(out, "|     %x\n", this_->data[this_->len]);
             fprintf(out, "|     %x\n", this_->data[this_->len]);
             fprintf(out, "|     %x\n", this_->data[this_->len]);
@@ -378,15 +452,21 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
             fprintf(out, "|     %x\n", this_->data[this_->len]);
         }
         else {
-            for (size_t i = this_->len; i < this_->capacity; ++i) {
+            for (size_t i = this_->len; i < capacity; ++i) {
                 fprintf(out, "|     %x\n", this_->data[i]);
             }
         }
-
-        #ifdef STACK_USE_CANARY
-            for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {
-                    fprintf(out, "| w   %llx\n", RIGHT_CANARY_WRAPPER[i]);
-            }
+    
+        #ifdef STACK_USE_CANARY             
+            #ifdef STACK_USE_CAPACITY_SYS_CHECK
+                for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {
+                    fprintf(out, "| r   %llx\n", ((STACK_CANARY_TYPE*)((char*)this_->dataWrapper + STACK_CANARY_WRAPPER_LEN * sizeof(STACK_CANARY_TYPE) + capacity * sizeof(STACK_TYPE)))[i]);
+                }
+            #else
+                for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {
+                        fprintf(out, "| r   %llx\n", RIGHT_CANARY_WRAPPER[i]);  // `r` for right canary
+                }
+            #endif
         #endif
 
         fprintf(out, "|  }\n");
@@ -401,17 +481,18 @@ stack_status stack_dump(const stack *this_)
     return stack_dumpToStream(this_, this_->logStream);
 }
 
-stack_status stack_healthCheck(stack *this_)    //TODO
+stack_status stack_healthCheck(stack *this_)    
 {
- 
+    STACK_PTR_VALIDATE(this_);
+
     FILE *out = this_->logStream;
 
     if ((this_->capacity == 0 || this_->capacity == STACK_SIZE_T_POISON) &&                     // checks if properly empty
         (this_->len      == 0 || this_->len      == STACK_SIZE_T_POISON)) 
     {
-    #ifdef STACK_USE_PTR_POISON                                             //TODO think of a better macro wrap
+    #ifdef STACK_USE_PTR_POISON                                                     
         if (this_->dataWrapper == (STACK_CANARY_TYPE*)STACK_FREED_PTR   &&
-            this_->data        ==  (STACK_TYPE*)STACK_FREED_PTR)                  //TODO think if invalid would fit here 
+            this_->data        ==  (STACK_TYPE*)STACK_FREED_PTR)                    //TODO think if invalid would fit here 
         {        
             this_->status = STACK_OK;
             return STACK_OK;
@@ -422,8 +503,52 @@ stack_status stack_healthCheck(stack *this_)    //TODO
     #endif
     }
 
+    uint64_t hash = 0;
+
+    #ifdef STACK_USE_STRUCT_HASH
+        hash = stack_calculateStructHash(this_);
+        if (this_->structHash != hash) 
+            this_->status |= STACK_BAD_STRUCT_HASH;
+    #endif
+
     if (this_->len > this_->capacity || this_->capacity > 1e20)
         this_->status |= STACK_INTEGRITY_VIOLATED;
+
+    #ifdef STACK_USE_CANARY
+    for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {             
+        if (this_->leftCanary[i] != STACK_LEFT_CANARY_POISON) {
+            this_->status |= STACK_LEFT_STRUCT_CANARY_CORRUPT;
+        }
+
+        if (this_->rightCanary[i] != STACK_RIGHT_CANARY_POISON) {
+            this_->status |= STACK_RIGHT_STRUCT_CANARY_CORRUPT;
+        }
+    }
+    #endif
+    
+    if (!ptrValid(this_->dataWrapper)) {
+        this_->status |= STACK_BAD_DATA_PTR;
+    }
+    
+    #ifdef STACK_USE_CAPACITY_SYS_CHECK
+        size_t capacity = stack_getRealCapacity(this_->dataWrapper);
+        if (capacity != STACK_SIZE_T_POISON && capacity != this_->capacity) {
+            STACK_LOG_TO_STREAM(this_, stderr, "Capacity != RealCapacity");
+            this_->status |= STACK_BAD_CAPACITY;
+            // this_->capacity = capacity;
+        }
+    #endif
+ 
+
+    /// All stack struct checks should happen above here
+    /// All stack data   chechs should happen below here
+
+
+    #ifdef STACK_USE_DATA_HASH
+        hash = stack_calculateDataHash(this_);
+        if (this_->dataHash != hash) 
+            this_->status |= STACK_BAD_DATA_HASH;
+    #endif
 
     #ifdef STACK_USE_CANARY
     for (size_t i = 0; i < STACK_CANARY_WRAPPER_LEN; ++i) {             
@@ -434,17 +559,9 @@ stack_status stack_healthCheck(stack *this_)    //TODO
         if (RIGHT_CANARY_WRAPPER[i] != STACK_RIGHT_CANARY_POISON) {
             this_->status |= STACK_RIGHT_DATA_CANARY_CORRUPT;
             }
-        
-        if (this_->leftCanary[i] != STACK_LEFT_CANARY_POISON) {
-            this_->status |= STACK_LEFT_STRUCT_CANARY_CORRUPT;
-        }
-
-        if (this_->rightCanary[i] != STACK_RIGHT_CANARY_POISON) {
-            this_->status |= STACK_RIGHT_STRUCT_CANARY_CORRUPT;
-        }
- 
     }
     #endif
+
 
     #ifdef STACK_USE_POISON
         for (size_t i = this_->len; i < this_->capacity; ++i) {
@@ -454,21 +571,7 @@ stack_status stack_healthCheck(stack *this_)    //TODO
         }
     #endif
     
-    uint64_t hash;
-
-    #ifdef STACK_USE_DATA_HASH
-        hash = stack_calculateDataHash(this_);
-        if (this_->dataHash != hash) 
-            this_->status |= STACK_BAD_DATA_HASH;
-    #endif
-
-    #ifdef STACK_USE_STRUCT_HASH
-        hash = stack_calculateStructHash(this_);
-        if (this_->structHash != hash) 
-            this_->status |= STACK_BAD_STRUCT_HASH;
-    #endif
-
-
+ 
     if (this_->status)
         STACK_LOG_TO_STREAM(this_, out, "Problems found during healthcheck!");
 

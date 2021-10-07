@@ -5,12 +5,22 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <math.h>
 
 #include <nmmintrin.h>
 #include <inttypes.h>
 #define __STDC_FORMAT_MACROS
+#include <malloc.h>
 
-#include "stack-config.h"
+#ifdef _WIN32
+    #include <windows.h>
+#endif
+#ifdef __unix__
+    #include <unistd.h>
+    #include <sys/mman.h>
+#endif
+
+#include "gstack-config.h"
 
 
 //===========================================
@@ -26,7 +36,7 @@ static const char STACK_LOG_DELIM[] = "===========================";
 
 static const size_t STACK_STARTING_CAPACITY = 2;
 
-static const double STACK_EXPAND_FACTOR = 1.5;
+static const double STACK_EXPAND_FACTOR = 2;
 static const double STACK_SHRINKAGE_FACTOR = 3;         
 
 static STACK_TYPE STACK_REFERENCE_POISONED_ELEM;
@@ -41,7 +51,13 @@ static STACK_TYPE STACK_REFERENCE_POISONED_ELEM;
     #define STACK_USE_CANARY
     #define STACK_USE_STRUCT_HASH
     #define STACK_USE_DATA_HASH
+    #define STACK_USE_CAPACITY_SYS_CHECK     
     #define STACK_VERBOSE 2
+#endif
+
+// WARNING: CAPACITY_SYS_CHECK must be used only with sanitizer, because real allocated size could be greater than required; for more information read man malloc_usable_size(3)
+#if defined(STACK_USE_CAPACITY_SYS_CHECK) && !defined(__SANITIZE_ADDRESS__)
+#undef STACK_USE_CAPACITY_SYS_CHECK
 #endif
 
 
@@ -64,7 +80,7 @@ static const size_t STACK_SIZE_T_POISON = -13;
     static const ULL STACK_RIGHT_CANARY_POISON = 0xFEEDFACECAFEBEE8;
     static const size_t STACK_CANARY_WRAPPER_LEN  = 3;
     
-    static const ULL STACK_BAD_CANARY_MASK = 0b1111000000; //TODO renaming from here till the end
+    static const ULL STACK_BAD_CANARY_MASK = 0b1111000000; 
 #else
     static const size_t STACK_CANARY_WRAPPER_LEN = 0;
 #endif
@@ -83,18 +99,20 @@ typedef int stack_status;
 enum stack_status_enum {
     STACK_OK                      = 0,
 
-    STACK_BAD_STRUCT_PTR          = 0b0001,
-    STACK_BAD_MEM_ALLOC           = 0b0010,
-    STACK_INTEGRITY_VIOLATED      = 0b0100,
-    STACK_DATA_INTEGRITY_VIOLATED = 0b1000,
+    STACK_BAD_STRUCT_PTR          = 0b00001,
+    STACK_BAD_DATA_PTR            = 0b00010,
+    STACK_BAD_MEM_ALLOC           = 0b00100,
+    STACK_INTEGRITY_VIOLATED      = 0b01000,
+    STACK_DATA_INTEGRITY_VIOLATED = 0b10000,
 
      STACK_LEFT_STRUCT_CANARY_CORRUPT = 0b0001000000,
     STACK_RIGHT_STRUCT_CANARY_CORRUPT = 0b0010000000,
        STACK_LEFT_DATA_CANARY_CORRUPT = 0b0100000000,
       STACK_RIGHT_DATA_CANARY_CORRUPT = 0b1000000000,
 
-    STACK_BAD_STRUCT_HASH = 0b010000000000,
-    STACK_BAD_DATA_HASH   = 0b100000000000
+    STACK_BAD_STRUCT_HASH = 0b0010000000000,
+    STACK_BAD_DATA_HASH   = 0b0100000000000,
+    STACK_BAD_CAPACITY    = 0b1000000000000
 };
 
 
@@ -119,6 +137,10 @@ bool ptrValid(const void* ptr);
 
 #ifdef STACK_USE_DATA_HASH
     uint64_t stack_calculateDataHash(stack *this_);
+#endif
+
+#ifdef STACK_USE_CAPACITY_SYS_CHECK
+    size_t stack_getRealCapacity(void* ptr);
 #endif
 
 

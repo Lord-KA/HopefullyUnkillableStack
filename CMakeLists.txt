@@ -46,5 +46,11 @@ target_link_libraries(
     gtest_main
 )
 
+target_link_libraries(
+    stack-demo
+    gtest_main
+)
+
 include(GoogleTest)
 # gtest_discover_tests(stack-test)
+# gtest_discover_tests(stack-demo)

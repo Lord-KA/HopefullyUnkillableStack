@@ -23,11 +23,23 @@ TEST(General, Modes)
     #ifdef STACK_USE_PTR_POISON
         printf("\tSTACK_USE_PTR_POISON\n");
     #endif
+    #ifdef STACK_USE_CANARY                 
+        printf("\tSTACK_USE_CANARY\n");     
+    #endif                                  
+    #ifdef STACK_USE_STRUCT_HASH                                                                                                    
+        printf("\tSTACK_USE_STRUCT_HASH\n");
+    #endif                                  
+    #ifdef STACK_USE_DATA_HASH                                                                                                      
+        printf("\tSTACK_USE_DATA_HASH\n");  
+    #endif
     #ifdef FULL_DEBUG
         printf("\tFULL_DEBUG\n");
     #endif
     #ifdef NDEBUG
         printf("\tNDEBUG\n");
+    #endif
+    #ifdef __SANITIZE_ADDRESS__
+        printf("\t__SANITIZE_ADDRESS__\n");
     #endif
     #ifdef STACK_VERBOSE
         printf("\tSTACK_VERBOSE = %d\n", STACK_VERBOSE);

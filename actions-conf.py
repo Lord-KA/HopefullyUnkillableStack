@@ -29,7 +29,8 @@ def printoption(arr):
       run: ./stack-test""")
 
 
-inp = open("gstack.h", "r")
+inp = open("gstack-header.h", "r")
+
 
 inp = inp.read()
 
