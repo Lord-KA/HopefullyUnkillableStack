@@ -291,7 +291,7 @@ stack_status stack_pop(stack *this_, int* item)
     #ifdef AUTO_SHRINK
         size_t newCapacity = stack_shrinkageFactorCalc(this_->capacity);
 
-        if (this_->len < newCapacity)
+        if (this_->len < newCapacity && this_->capacity > newCapacity)
         {
             stack_reallocate(this_, newCapacity);
         }
@@ -313,6 +313,7 @@ stack_status stack_pop(stack *this_, int* item)
 stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 {
     STACK_HEALTH_CHECK(this_);
+
     #ifdef STACK_USE_POISON
         if (newCapacity < this_->capacity) 
         {
@@ -483,7 +484,7 @@ stack_status stack_dump(const stack *this_)
     return stack_dumpToStream(this_, this_->logStream);
 }
 
-stack_status stack_healthCheck(stack *this_)    
+stack_status stack_healthCheck(const stack *this_)    
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -582,7 +583,7 @@ stack_status stack_healthCheck(stack *this_)
 
 
 #ifdef STACK_USE_STRUCT_HASH
-uint64_t stack_calculateStructHash(stack *this_)
+uint64_t stack_calculateStructHash(const stack *this_)
 {
     assert(ptrValid(this_));
 
@@ -590,14 +591,13 @@ uint64_t stack_calculateStructHash(stack *this_)
 
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->dataWrapper));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->data));
-    hash = _mm_crc32_u64(hash, (uint64_t)(this_->dataWrapper));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->capacity));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->len));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->status));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
     
     #ifdef STACK_USE_DATA_HASH
-        hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
+        hash = _mm_crc32_u64(hash, (uint64_t)(this_->dataHash));
     #endif
 
     return hash;
@@ -606,7 +606,7 @@ uint64_t stack_calculateStructHash(stack *this_)
 
 
 #ifdef STACK_USE_DATA_HASH
-uint64_t stack_calculateDataHash(stack *this_)
+uint64_t stack_calculateDataHash(const stack *this_)
 {
     assert(ptrValid(this_));
 

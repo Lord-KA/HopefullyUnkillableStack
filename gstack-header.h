@@ -45,6 +45,13 @@ static STACK_TYPE STACK_REFERENCE_POISONED_ELEM;
 // Debug options configuration
 
 
+#ifdef CHEAP_DEBUG
+    #define STACK_USE_PTR_POISON
+    #define STACK_USE_CANARY
+    #define STACK_USE_STRUCT_HASH
+    #define STACK_USE_CAPACITY_SYS_CHECK
+#endif
+
 #ifdef FULL_DEBUG
     #define STACK_USE_POISON
     #define STACK_USE_PTR_POISON
@@ -56,9 +63,9 @@ static STACK_TYPE STACK_REFERENCE_POISONED_ELEM;
     #define STACK_VERBOSE 2
 #endif
 
-// WARNING: CAPACITY_SYS_CHECK must be used only with sanitizer, because real allocated size could be greater than required; for more information read man malloc_usable_size(3)
+// WARNING: CAPACITY_SYS_CHECK must be used carefully without sanitizer, because real allocated size could be greater than required; for more information read `man 3 malloc_usable_size`
 #if defined(STACK_USE_CAPACITY_SYS_CHECK) && !defined(__SANITIZE_ADDRESS__)
-#undef STACK_USE_CAPACITY_SYS_CHECK
+#undef STACK_USE_CAPACITY_SYS_CHECK         //TODO implement non-intrusive checks 
 #endif
 
 
@@ -129,7 +136,7 @@ bool ptrValid(const void* ptr);
 #endif
 
 #ifdef STACK_USE_STRUCT_HASH
-    uint64_t stack_calculateStructHash(stack *this_);
+    uint64_t stack_calculateStructHash(const stack *this_);
 #endif
 
 #ifdef STACK_USE_POISON
@@ -137,7 +144,7 @@ bool ptrValid(const void* ptr);
 #endif
 
 #ifdef STACK_USE_DATA_HASH
-    uint64_t stack_calculateDataHash(stack *this_);
+    uint64_t stack_calculateDataHash(const stack *this_);
 #endif
 
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
@@ -159,7 +166,7 @@ bool ptrValid(const void* ptr);
 #ifndef NDEBUG
     #define STACK_HEALTH_CHECK(this_) ({                                                        \
         if (stack_healthCheck(this_)) {                                                          \
-            fprintf(this_->logStream, "Probles found in healthcheck run from %s\n", __func__);    \
+            fprintf(this_->logStream, "Probles found in healthcheck run from %s on line %zu\n\n", __func__, __LINE__);    \
         }                                                                                          \
         this_->status;                                                                              \
     })
@@ -214,7 +221,7 @@ struct stack
     size_t capacity;
     size_t len;
 
-    stack_status status;
+    mutable stack_status status;
 
     FILE *logStream;
     
@@ -241,7 +248,7 @@ stack_status stack_push(stack *this_, int item);
 
 stack_status stack_pop(stack *this_, int* item);
 
-stack_status stack_healthCheck(stack *this_);  
+stack_status stack_healthCheck(const stack *this_);  
 
 stack_status stack_dump(const stack *this_);
 

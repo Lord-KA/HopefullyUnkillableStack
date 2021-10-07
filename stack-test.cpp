@@ -32,6 +32,9 @@ TEST(General, Modes)
     #ifdef STACK_USE_DATA_HASH                                                                                                      
         printf("\tSTACK_USE_DATA_HASH\n");  
     #endif
+    #ifdef STACK_USE_CAPACITY_SYS_CHECK
+        printf("\tSTACK_USE_CAPACITY_SYS_CHECK\n");
+    #endif
     #ifdef FULL_DEBUG
         printf("\tFULL_DEBUG\n");
     #endif
@@ -76,7 +79,7 @@ TEST(PushPop, Random)
 
     stack_ctor(&S);
     
-    size_t iterations = rnd() % 10000 + 100;
+    size_t iterations = rnd() % 5000000 + 100;
     // iterations = 0;
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
