@@ -25,7 +25,7 @@ bool ptrValid(const void* ptr)
             size_t page_size = sysconf(_SC_PAGESIZE);
             void *base = (void *)((((size_t)ptr) / page_size) * page_size);
             return msync(base, page_size, MS_ASYNC) == 0;
-        #else 
+         #else 
             #ifdef _WIN32
                 MEMORY_BASIC_INFORMATION mbi = {};
                 if (!VirtualQuery(ptr, &mbi, sizeof (mbi)))
@@ -193,6 +193,12 @@ stack_status stack_dtor(stack *this_)
     STACK_PTR_VALIDATE(this_);          
 
     STACK_HEALTH_CHECK(this_);
+
+    #ifdef STACK_USE_CAPACITY_SYS_CHECK
+        size_t newCapacity = stack_getRealCapacity(this_->dataWrapper);
+        if (newCapacity != STACK_SIZE_T_POISON)
+            this_->capacity = newCapacity;
+    #endif
 
     #ifdef STACK_USE_POISON
         memset((char*)this_->dataWrapper, STACK_FREED_POISON, stack_allocated_size(this_->capacity));
@@ -395,9 +401,11 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
 
     size_t capacity = this_->capacity;
     #ifdef STACK_USE_CAPACITY_SYS_CHECK
-        capacity = stack_getRealCapacity(this_->dataWrapper);
-        if (capacity == STACK_SIZE_T_POISON) {
-            capacity = this_->capacity;
+        if (this_->status & STACK_BAD_CAPACITY) {
+            capacity = stack_getRealCapacity(this_->dataWrapper);
+            if (capacity == STACK_SIZE_T_POISON) {
+                capacity = this_->capacity;
+            }
         }
     #endif
  
@@ -484,7 +492,11 @@ stack_status stack_dump(const stack *this_)
     return stack_dumpToStream(this_, this_->logStream);
 }
 
-stack_status stack_healthCheck(const stack *this_)    
+#ifdef STACK_USE_CAPACITY_SYS_CHECK
+stack_status stack_healthCheck(stack *this_)            // healthcheck changes this_->capacity to realCapacity if the current value is definetly wrong
+#else
+stack_status stack_healthCheck(const stack *this_)
+#endif
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -535,11 +547,22 @@ stack_status stack_healthCheck(const stack *this_)
     
     #ifdef STACK_USE_CAPACITY_SYS_CHECK
         size_t capacity = stack_getRealCapacity(this_->dataWrapper);
-        if (capacity != STACK_SIZE_T_POISON && capacity != this_->capacity) {
-            STACK_LOG_TO_STREAM(this_, stderr, "Capacity != RealCapacity");
-            this_->status |= STACK_BAD_CAPACITY;
-            // this_->capacity = capacity;
-        }
+        if (capacity != STACK_SIZE_T_POISON) {
+            if ((capacity < this_->capacity)) {
+                STACK_LOG_TO_STREAM(this_, stderr, "Capacity != RealCapacity");
+                this_->status |= STACK_BAD_CAPACITY;
+                this_->capacity = capacity;
+            }
+            else {
+                #if defined(__SANITIZE_ADDRESS__)
+                if (capacity != this_->capacity) {
+                    STACK_LOG_TO_STREAM(this_, stderr, "Capacity != RealCapacity");
+                    this_->status |= STACK_BAD_CAPACITY;
+                    this_->capacity = capacity;
+                }
+                #endif
+            }
+       }
     #endif
  
 

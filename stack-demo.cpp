@@ -82,9 +82,31 @@ TEST_F(myFixture, StructureCanary)
 }
 
 
-TEST_F(myFixture, StructureHash)
+TEST_F(myFixture, StructureHashCapacity)
 {
-    Stack->capacity = 1000;
+    Stack->capacity = 100;
     puts("Altered capacity:\n");
     stack_healthCheck(Stack);
+}
+
+TEST_F(myFixture, StructureHashLen)
+{
+    Stack->len = 1000;
+    puts("Altered len:\n");
+    stack_healthCheck(Stack);
+}
+
+
+TEST_F(myFixture, DataCanary)
+{
+    stack *this_ = Stack;
+    char* lButcher = (char*)(LEFT_CANARY_WRAPPER);
+    char* rButcher = (char*)(RIGHT_CANARY_WRAPPER) - 16;
+    puts("\nAltered data from left:\n");
+    strcpy(lButcher, "Somewhat long string of a sorts...");
+    stack_healthCheck(Stack);
+    puts("\nAltered data from right:\n");
+    strcpy(rButcher, "Hamster running down the cliff...");
+    stack_healthCheck(Stack);
+
 }
