@@ -411,17 +411,19 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
  
     if (STACK_VERBOSE >= 1) {
         fprintf(out, "|----------------\n");
-        fprintf(out, "| Capacity       = %zu\n", this_->capacity);
+        fprintf(out, "| Capacity         = %zu\n", this_->capacity);
         #ifdef STACK_USE_CAPACITY_SYS_CHECK
-            fprintf(out, "| Real capacity  = %zu\n", capacity);
+            fprintf(out, "| Real capacity    = %zu\n", capacity);
         #endif
-        fprintf(out, "| Len            = %zu\n", this_->len);
-        fprintf(out, "| Elem size      = %zu\n", sizeof(STACK_TYPE));
+        fprintf(out, "| Len              = %zu\n", this_->len);
+        fprintf(out, "| Data wrapper ptr = %p\n",  this_->dataWrapper);
+        fprintf(out, "| Data ptr         = %p\n",  this_->data);
+        fprintf(out, "| Elem size        = %zu\n", sizeof(STACK_TYPE));
         #ifdef STACK_USE_STRUCT_HASH
-            fprintf(out, "| Struct hash    = %zu\n", this_->structHash);
+            fprintf(out, "| Struct hash      = %zu\n", this_->structHash);
         #endif
         #ifdef STACK_USE_DATA_HASH
-            fprintf(out, "| Data hash      = %zu\n", this_->dataHash);
+            fprintf(out, "| Data hash        = %zu\n", this_->dataHash);
         #endif
         fprintf(out, "|   {\n");
 

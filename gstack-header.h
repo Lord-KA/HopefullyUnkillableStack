@@ -57,10 +57,6 @@
 
 struct stack;
 
-#ifndef ULL
-#define ULL unsigned long long
-#endif
-
 static const char STACK_LOG_DELIM[] = "===========================";      /// delim for stack logs
 
 static const size_t STACK_STARTING_CAPACITY = 2;                          /// capacity when stack is freshly created
@@ -90,11 +86,12 @@ static const size_t STACK_SIZE_T_POISON = -13;                          /// pois
 #endif
 
 #ifdef STACK_USE_CANARY   
-    static const ULL  STACK_LEFT_CANARY_POISON = 0xFEEDFACECAFEBEE9;    /// Poison for left  struct and data canaries
-    static const ULL STACK_RIGHT_CANARY_POISON = 0xFEEDFACECAFEBEE8;    /// Poison for right struct and data canaries
+    typedef unsigned long long STACK_CANARY_TYPE;          /// Type for canaries can be configured
+    static const STACK_CANARY_TYPE  STACK_LEFT_CANARY_POISON = 0xFEEDFACECAFEBEE9;    /// Poison for left  struct and data canaries
+    static const STACK_CANARY_TYPE STACK_RIGHT_CANARY_POISON = 0xFEEDFACECAFEBEE8;    /// Poison for right struct and data canaries
     static const size_t STACK_CANARY_WRAPPER_LEN  = 3;                  /// Len of all canary wrappers
     
-    static const ULL STACK_BAD_CANARY_MASK = 0b1111000000;              /// Mask for all status codes associated with a bad canary
+    // static const ULL STACK_BAD_CANARY_MASK = 0b1111000000;           /// Mask for all status codes associated with a bad canary
 #else
     static const size_t STACK_CANARY_WRAPPER_LEN = 0;                   /// Service value for turned off canaries
 #endif
@@ -104,9 +101,6 @@ static const size_t STACK_SIZE_T_POISON = -13;                          /// pois
 #endif
 
 
-#ifndef CANARY_TYPE
-    typedef ULL STACK_CANARY_TYPE;          /// Type for canaries can be configured
-#endif
  
 typedef int stack_status;                   /// stack status is a bitset inside an int
     
