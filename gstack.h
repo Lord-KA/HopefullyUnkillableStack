@@ -224,7 +224,7 @@ stack_status stack_dtor(stack *this_)
 }
 
 
-stack_status stack_push(stack *this_, int item)
+stack_status stack_push(stack *this_, STACK_TYPE item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -268,7 +268,7 @@ stack_status stack_push(stack *this_, int item)
 }
 
 
-stack_status stack_pop(stack *this_, int* item)
+stack_status stack_pop(stack *this_, STACK_TYPE* item)
 {
     STACK_PTR_VALIDATE(this_);
 
