@@ -85,8 +85,8 @@ static const size_t STACK_SIZE_T_POISON = -13;                          /// pois
     static const char STACK_FREED_POISON   = 0xFC;           /// one-byte poison for freed structures
 #endif
 
+typedef unsigned long long STACK_CANARY_TYPE;          /// Type for canaries can be configured
 #ifdef STACK_USE_CANARY   
-    typedef unsigned long long STACK_CANARY_TYPE;          /// Type for canaries can be configured
     static const STACK_CANARY_TYPE  STACK_LEFT_CANARY_POISON = 0xFEEDFACECAFEBEE9;    /// Poison for left  struct and data canaries
     static const STACK_CANARY_TYPE STACK_RIGHT_CANARY_POISON = 0xFEEDFACECAFEBEE8;    /// Poison for right struct and data canaries
     static const size_t STACK_CANARY_WRAPPER_LEN  = 3;                  /// Len of all canary wrappers
@@ -220,11 +220,11 @@ bool ptrValid(const void* ptr);
  * @return stack_status 
  */
 #ifndef NDEBUG
-    #define STACK_HEALTH_CHECK(this_) ({                                                        \
-        if (stack_healthCheck(this_)) {                                                          \
+    #define STACK_HEALTH_CHECK(this_) ({                                                                                \
+        if (stack_healthCheck(this_)) {                                                                                  \
             fprintf(this_->logStream, "Probles found in healthcheck run from %s on line %zu\n\n", __func__, __LINE__);    \
-        }                                                                                          \
-        this_->status;                                                                              \
+        }                                                                                                                  \
+        this_->status;                                                                                                      \
     })
 #else
     #define STACK_HEALTH_CHECK(this_) ({false;})
@@ -316,7 +316,7 @@ struct stack
     /// @brief ptr to all allocated memory including capacity * sizeof(STACK_TYPE) of data and 2 data wrapper
     STACK_CANARY_TYPE *dataWrapper;
     /// @brief ptr to the stack data
-    STACK_TYPE *data;
+    STACK_TYPE *data;                                   //TODO use macro instead of `data`
     /// @brief capacity of the stack
     size_t capacity;
     /// @brief current lenght of the stack
@@ -326,7 +326,7 @@ struct stack
     mutable stack_status status;
 
     /// @brief outp stream for stack logging
-    FILE *logStream;
+    FILE *logStream;                                    //TODO move logStream to static var
     
     /// @brief hash value of stack structure fields
     #ifdef STACK_USE_STRUCT_HASH

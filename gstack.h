@@ -104,11 +104,18 @@ static size_t stack_expandFactorCalc(size_t capacity)
     #ifdef STACK_USE_CANARY
         if (capacity <= 1)
             return 2 * sizeof(STACK_CANARY_TYPE);
-        return (((size_t)(capacity * STACK_EXPAND_FACTOR) - 1) / sizeof(STACK_CANARY_TYPE) + 1) * sizeof(STACK_CANARY_TYPE);        // formula for least denominator of sizeof(STACK_CANARY_TYPE), that is > new capacity
+
+        size_t newCapacity = (((size_t)(capacity * STACK_EXPAND_FACTOR) - 1) / sizeof(STACK_CANARY_TYPE) + 1) * sizeof(STACK_CANARY_TYPE);        // formula for least denominator of sizeof(STACK_CANARY_TYPE), that is > new capacity
+        if (newCapacity <= capacity)
+            return capacity + 1;
+        return newCapacity;
     #else
         if (capacity <= 1)
             return 2;
-        return capacity * STACK_EXPAND_FACTOR;
+        size_t newCapacity = capacity * STACK_EXPAND_FACTOR;
+        if (newCapacity <= capacity)
+            return capacity + 1;
+        return newCapacity;
     #endif 
 }
 
@@ -118,11 +125,17 @@ static size_t stack_shrinkageFactorCalc(size_t capacity)
     #ifdef STACK_USE_CANARY
         if (capacity <= 1)          
             return 2 * sizeof(STACK_CANARY_TYPE);
-        return (size_t)(capacity * STACK_SHRINKAGE_FACTOR) / sizeof(STACK_CANARY_TYPE) * sizeof(STACK_CANARY_TYPE);               // formula for greatest denominator of sizeof(STACK_CANARY_TYPE), that is < new capacity
+        size_t newCapacity = (size_t)(capacity * STACK_SHRINKAGE_FACTOR) / sizeof(STACK_CANARY_TYPE) * sizeof(STACK_CANARY_TYPE);               // formula for greatest denominator of sizeof(STACK_CANARY_TYPE), that is < new capacity
+        if (newCapacity >= capacity)
+            return capacity - 1;
+        return newCapacity;
     #else
         if (capacity <= 1)
             return 2;
-        return capacity * STACK_SHRINKAGE_FACTOR;
+        size_t newCapacity = capacity * STACK_SHRINKAGE_FACTOR;
+        if (newCapacity >= capacity)
+            return capacity - 1;
+        return newCapacity;
     #endif
 }
 
@@ -217,7 +230,7 @@ stack_status stack_dtor(stack *this_)
     
     #ifdef STACK_USE_PTR_POISON
         this_->dataWrapper = (STACK_CANARY_TYPE*)STACK_FREED_PTR;
-        this_->data        =  (STACK_TYPE*)STACK_FREED_PTR;
+        this_->data        = (STACK_TYPE*)STACK_FREED_PTR;
     #endif
 
     return STACK_HEALTH_CHECK(this_);
