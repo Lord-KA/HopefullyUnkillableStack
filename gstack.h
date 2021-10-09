@@ -8,7 +8,7 @@
 // Advanced debug functions
 
 
-bool ptrValid(const void* ptr)         
+static bool ptrValid(const void* ptr)         
 {
     if (ptr == NULL) {
         return false;
@@ -63,7 +63,7 @@ bool ptrValid(const void* ptr)
 
 
 #ifdef STACK_USE_POISON
-    bool stack_isPoisoned(const STACK_TYPE *elem)                       
+    static bool stack_isPoisoned(const STACK_TYPE *elem)                       
     {
         assert(ptrValid(elem));
         return !memcmp(elem, &STACK_REFERENCE_POISONED_ELEM, sizeof(STACK_TYPE));
@@ -72,7 +72,7 @@ bool ptrValid(const void* ptr)
 
 
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-    size_t stack_getRealCapacity(void *ptr) 
+    static size_t stack_getRealCapacity(void *ptr) 
     {
         if (!ptrValid(ptr)) {
             fprintf(stderr, "WARNING: getRealCapacity got a bad pointer!\n");
@@ -150,7 +150,7 @@ static size_t stack_allocated_size(size_t capacity)
 // Stack implementation
 
 
-stack_status stack_ctor(stack *this_)
+static stack_status stack_ctor(stack *this_)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -201,7 +201,7 @@ stack_status stack_ctor(stack *this_)
 }   
 
 
-stack_status stack_dtor(stack *this_)           
+static stack_status stack_dtor(stack *this_)           
 {
     STACK_PTR_VALIDATE(this_);          
 
@@ -237,7 +237,7 @@ stack_status stack_dtor(stack *this_)
 }
 
 
-stack_status stack_push(stack *this_, STACK_TYPE item)
+static stack_status stack_push(stack *this_, STACK_TYPE item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -281,7 +281,7 @@ stack_status stack_push(stack *this_, STACK_TYPE item)
 }
 
 
-stack_status stack_pop(stack *this_, STACK_TYPE* item)
+static stack_status stack_pop(stack *this_, STACK_TYPE* item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -329,7 +329,7 @@ stack_status stack_pop(stack *this_, STACK_TYPE* item)
 }
 
 
-stack_status stack_reallocate(stack *this_, const size_t newCapacity)
+static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 {
     STACK_HEALTH_CHECK(this_);
 
@@ -380,7 +380,7 @@ stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 }
 
 
-stack_status stack_dumpToStream(const stack *this_, FILE *out)
+static stack_status stack_dumpToStream(const stack *this_, FILE *out)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -502,15 +502,15 @@ stack_status stack_dumpToStream(const stack *this_, FILE *out)
     return this_->status;
 }
 
-stack_status stack_dump(const stack *this_) 
+static stack_status stack_dump(const stack *this_) 
 {
     return stack_dumpToStream(this_, this_->logStream);
 }
 
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-stack_status stack_healthCheck(stack *this_)            // healthcheck changes this_->capacity to realCapacity if the current value is definetly wrong
+static stack_status stack_healthCheck(stack *this_)            // healthcheck changes this_->capacity to realCapacity if the current value is definetly wrong
 #else
-stack_status stack_healthCheck(const stack *this_)
+static stack_status stack_healthCheck(const stack *this_)
 #endif
 {
     STACK_PTR_VALIDATE(this_);
@@ -621,7 +621,7 @@ stack_status stack_healthCheck(const stack *this_)
 
 
 #ifdef STACK_USE_STRUCT_HASH
-uint64_t stack_calculateStructHash(const stack *this_)
+static uint64_t stack_calculateStructHash(const stack *this_)
 {
     assert(ptrValid(this_));
 
@@ -644,7 +644,7 @@ uint64_t stack_calculateStructHash(const stack *this_)
 
 
 #ifdef STACK_USE_DATA_HASH
-uint64_t stack_calculateDataHash(const stack *this_)
+static uint64_t stack_calculateDataHash(const stack *this_)
 {
     assert(ptrValid(this_));
 

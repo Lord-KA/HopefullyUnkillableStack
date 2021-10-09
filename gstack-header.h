@@ -129,12 +129,12 @@ enum stack_status_enum {                        /// ERROR codes for stack
 
 
 /**
- * @fn bool ptrValid(const void* ptr)
+ * @fn static bool ptrValid(const void* ptr)
  * @brief returns true if ptr has passed verification checks, false otherwise
  * @param ptr some pointer associated with the stack
  * @return `true` if ptr is good, `false` otherwise
  */
-bool ptrValid(const void* ptr);
+static bool ptrValid(const void* ptr);
 
 
 /**
@@ -149,46 +149,46 @@ bool ptrValid(const void* ptr);
 
 
 /**
- * @fn uint64_t stack_calculateStructHash(const stack *this_)
+ * @fn static uint64_t stack_calculateStructHash(const stack *this_)
  * @brief calculates stack struct hash
  * @param this_ pointer to const stack struct
  * @return uint64_t hash value
  */
 #ifdef STACK_USE_STRUCT_HASH
-    uint64_t stack_calculateStructHash(const stack *this_);
+    static uint64_t stack_calculateStructHash(const stack *this_);
 #endif
 
 
 /**
- * @fn uint64_t stack_calculateDataHash(const stack *this_)
+ * @fn static uint64_t stack_calculateDataHash(const stack *this_)
  * @brief calculates stack data hash bytewise
  * @param this_ pointer to const stack struct
  * @return uint64_t hash value
  */
 #ifdef STACK_USE_DATA_HASH
-    uint64_t stack_calculateDataHash(const stack *this_);
+    static uint64_t stack_calculateDataHash(const stack *this_);
 #endif
 
 
 /**
- * @fn bool stack_isPoisoned(const STACK_TYPE *elem)
+ * @fn static bool stack_isPoisoned(const STACK_TYPE *elem)
  * @brief check if stack elem is filled with one-byte poison
  * @param pointer to a stack elem
  * @return `true` if poisoned, `false` otherwise
  */
 #ifdef STACK_USE_POISON
-    bool stack_isPoisoned(const STACK_TYPE *elem);
+    static bool stack_isPoisoned(const STACK_TYPE *elem);
 #endif
 
 
 /**
- * @fn size_t stack_getRealCapacity(void* ptr);
+ * @fn static size_t stack_getRealCapacity(void* ptr);
  * @brief gets real capacity from the allocator
  * @param ptr to allocated data
  * @return real capacity
  */
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-    size_t stack_getRealCapacity(void* ptr);
+    static size_t stack_getRealCapacity(void* ptr);
 #endif
 
 
@@ -347,83 +347,83 @@ struct stack
 
 
 /**
- * @fn stack_status stack_ctor(stack *this_)
+ * @fn static stack_status stack_ctor(stack *this_)
  * @brief stack constructor
  * @param this_ pointer to memory allocated for stack structure
  * @return bitset of stack status
  */
-stack_status stack_ctor(stack *this_);
+static stack_status stack_ctor(stack *this_);
 
 
 /**
- * @fn stack_status stack_dtor(stack *this_)
+ * @fn static stack_status stack_dtor(stack *this_)
  * @brief stack destructor
  * @param this_ pointer to stack structure
  * @return bitset of stack status
  */
-stack_status stack_dtor(stack *this_);
+static stack_status stack_dtor(stack *this_);
 
 
 /**
- * @fn stack_status stack_push(stack *this_, STACK_TYPE item)
+ * @fn static stack_status stack_push(stack *this_, STACK_TYPE item)
  * @brief pushes `item` into stack
  * @param this_ pointer to stack
  * @param item elem to be pushed
  * @return bitset of stack status
  */
-stack_status stack_push(stack *this_, STACK_TYPE item);
+static stack_status stack_push(stack *this_, STACK_TYPE item);
 
 
 /**
- * @fn stack_status stack_pop (stack *this_, STACK_TYPE item)
+ * @fn static stack_status stack_pop (stack *this_, STACK_TYPE item)
  * @brief pops last elem from stack
  * @param this_ pointer to stack
  * @param item pointer to var to write to
  * @return bitset of stack status
  */
-stack_status stack_pop (stack *this_, STACK_TYPE* item);
+static stack_status stack_pop (stack *this_, STACK_TYPE* item);
 
 
 /**
- * @fn stack_status stack_healthCheck(stack *this_)
+ * @fn static stack_status stack_healthCheck(stack *this_)
  * @brief checks stacks state and logs every problem
  * @param this_ pointer to stack; const if no capacity sys check because it overrides when capacity if nessasary
  * @return bitset of stack status (of errors)
  */
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-stack_status stack_healthCheck(stack *this_);
+static stack_status stack_healthCheck(stack *this_);
 #else
-stack_status stack_healthCheck(const stack *this_);  
+static stack_status stack_healthCheck(const stack *this_);  
 #endif
 
 
 /**
- * @fn stack_status stack_dump(const stack *this_)
+ * @fn static stack_status stack_dump(const stack *this_)
  * @brief dumps stack structure and data into this_->logStream
  * @param this_ pointer to stack
  * @return bitset of stack status
  */
-stack_status stack_dump(const stack *this_);
+static stack_status stack_dump(const stack *this_);
 
 
 /**
- * @fn stack_status stack_dumpToStream(const stack *this_, FILE *out)
+ * @fn static stack_status stack_dumpToStream(const stack *this_, FILE *out)
  * @brief dumps stack structure and data into `out`
  * @param this_ pointer to stack
  * @param out stream for logs
  * @return bitset of stack status
  */
-stack_status stack_dumpToStream(const stack *this_, FILE *out);
+static stack_status stack_dumpToStream(const stack *this_, FILE *out);
 
 
 /**
- * @fn stack_status stack_reallocate(stack *this_, const size_t newCapacity)
+ * @fn static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
  * @brief reallocates memory for stack data
  * @param this_ pointer to stack
  * @param newCapacity new capacity to reallocate to
  * @return bitset of stack status
  */
-stack_status stack_reallocate(stack *this_, const size_t newCapacity);
+static stack_status stack_reallocate(stack *this_, const size_t newCapacity);
 
 
 #endif
