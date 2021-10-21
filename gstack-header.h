@@ -33,7 +33,7 @@
 #include <string.h>
 #include <math.h>
 
-#include <nmmintrin.h>          /// for crc32 intrinsic
+#include <nmmintrin.h>              /// for crc32 intrinsic
 #include <inttypes.h>
 #define __STDC_FORMAT_MACROS    
 
@@ -105,22 +105,22 @@ typedef unsigned long long STACK_CANARY_TYPE;          /// Type for canaries can
 typedef int stack_status;                   /// stack status is a bitset inside an int
     
 enum stack_status_enum {                        /// ERROR codes for stack
-    STACK_OK                      = 0,                  /// All_is_fine status
+    STACK_OK                      = 0,               /// All_is_fine status
 
-    STACK_BAD_STRUCT_PTR          = 0b00001,            /// Bad ptr for stack structure provided
-    STACK_BAD_DATA_PTR            = 0b00010,            /// Bad ptr for stack data
-    STACK_BAD_MEM_ALLOC           = 0b00100,            /// Error during memory (re)allocation
-    STACK_INTEGRITY_VIOLATED      = 0b01000,            /// Stack structure intergrity violated
-    STACK_DATA_INTEGRITY_VIOLATED = 0b10000,            /// Stack data intergrity violated
+    STACK_BAD_STRUCT_PTR          = 1<<0,            /// Bad ptr for stack structure provided
+    STACK_BAD_DATA_PTR            = 1<<1,            /// Bad ptr for stack data
+    STACK_BAD_MEM_ALLOC           = 1<<2,            /// Error during memory (re)allocation
+    STACK_INTEGRITY_VIOLATED      = 1<<3,            /// Stack structure intergrity violated
+    STACK_DATA_INTEGRITY_VIOLATED = 1<<4,            /// Stack data intergrity violated
 
-     STACK_LEFT_STRUCT_CANARY_CORRUPT = 0b0001000000,   /// Stack canary has been modified
-    STACK_RIGHT_STRUCT_CANARY_CORRUPT = 0b0010000000,   /// could happen if big chank of data
-       STACK_LEFT_DATA_CANARY_CORRUPT = 0b0100000000,   /// has been carelessly filled with data
-      STACK_RIGHT_DATA_CANARY_CORRUPT = 0b1000000000,   /// or if stack data has been writen above it
+     STACK_LEFT_STRUCT_CANARY_CORRUPT = 1<<7,   /// Stack canary has been modified
+    STACK_RIGHT_STRUCT_CANARY_CORRUPT = 1<<8,   /// could happen if big chank of data
+       STACK_LEFT_DATA_CANARY_CORRUPT = 1<<9,   /// has been carelessly filled with data
+      STACK_RIGHT_DATA_CANARY_CORRUPT = 1<<10,  /// or if stack data has been writen above it
 
-    STACK_BAD_STRUCT_HASH = 0b0010000000000,            /// Bad hash of all stack structure filds
-    STACK_BAD_DATA_HASH   = 0b0100000000000,            /// Bad hash of all the stack data
-    STACK_BAD_CAPACITY    = 0b1000000000000             /// Stack capacity has been modified and/or is clearly incorrect
+    STACK_BAD_STRUCT_HASH = 1<<13,            /// Bad hash of all stack structure filds
+    STACK_BAD_DATA_HASH   = 1<<14,            /// Bad hash of all the stack data
+    STACK_BAD_CAPACITY    = 1<<15             /// Stack capacity has been modified and/or is clearly incorrect
 };
 
 
@@ -192,9 +192,8 @@ static bool ptrValid(const void* ptr);
 #endif
 
 
-/// macro for accessing left  data canary wrapper from inside of a func with defined `this_`
+/// macros for accessing Left and Right data canary wrapper from inside of a func with defined `this_`
 #define  LEFT_CANARY_WRAPPER (this_->dataWrapper)
-/// macro for accessing right data canary wrapper from inside of a func with defined `this_`
 #define RIGHT_CANARY_WRAPPER ((STACK_CANARY_TYPE*)((char*)this_->dataWrapper + STACK_CANARY_WRAPPER_LEN * sizeof(STACK_CANARY_TYPE) + this_->capacity * sizeof(STACK_TYPE)))
 
 
@@ -378,7 +377,7 @@ static stack_status stack_push(stack *this_, STACK_TYPE item);
  * @fn static stack_status stack_pop (stack *this_, STACK_TYPE item)
  * @brief pops last elem from stack
  * @param this_ pointer to stack
- * @param item pointer to var to write to
+ * @param item pointer to var to write to or NULL if value should be discarded
  * @return bitset of stack status
  */
 static stack_status stack_pop (stack *this_, STACK_TYPE* item);

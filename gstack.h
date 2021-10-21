@@ -293,20 +293,22 @@ static stack_status stack_pop(stack *this_, STACK_TYPE* item)
     }
 
     this_->len -= 1;
-    *item = this_->data[this_->len];
-    
-    #ifdef STACK_USE_POISON             //TODO do smth else?
-        if (stack_isPoisoned(item)) {                               
-            STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: accessed uninitilized element!");
-        }
-        memset((char*)(&this_->data[this_->len]), STACK_ELEM_POISON, sizeof(STACK_TYPE));
-    #endif
 
-    #ifdef STACK_USE_CANARY
-        // if (stack_isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
-        //     STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
-    #endif
-    
+    if (ptrValid(item)) {   
+        *item = this_->data[this_->len];
+        #ifdef STACK_USE_POISON             //TODO do smth else?
+            if (stack_isPoisoned(item)) {                               
+                STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: accessed uninitilized element!");
+            }
+            memset((char*)(&this_->data[this_->len]), STACK_ELEM_POISON, sizeof(STACK_TYPE));
+        #endif
+
+        #ifdef STACK_USE_CANARY
+            // if (stack_isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
+            //     STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
+        #endif
+    }
+   
     #ifdef AUTO_SHRINK
         size_t newCapacity = stack_shrinkageFactorCalc(this_->capacity);
 
@@ -324,7 +326,6 @@ static stack_status stack_pop(stack *this_, STACK_TYPE* item)
         this_->structHash = stack_calculateStructHash(this_);
     #endif
 
-
     return STACK_HEALTH_CHECK(this_);
 }
 
@@ -334,7 +335,7 @@ static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
     STACK_HEALTH_CHECK(this_);
 
     #ifdef STACK_USE_POISON
-        if (newCapacity < this_->capacity) 
+        if (newCapacity < this_->capacity)
         {
             memset((char*)(this_->data + newCapacity), STACK_FREED_POISON, (this_->capacity - newCapacity) * sizeof(STACK_TYPE));
         }
@@ -383,6 +384,11 @@ static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 static stack_status stack_dumpToStream(const stack *this_, FILE *out)
 {
     STACK_PTR_VALIDATE(this_);
+    if (!ptrValid(out)) {
+        fprintf(stderr, "WARNING: Bad log stream provided, outputing to stderr.\n");
+        out = stderr;
+    }
+
 
     fprintf(out, "%s\n", STACK_LOG_DELIM);
     fprintf(out, "| Stack [%p] :\n", this_);
