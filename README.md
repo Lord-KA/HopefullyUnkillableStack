@@ -7,8 +7,8 @@ This is a generalized stack container lib with additional debug options like has
 1. STACK_USE_POISON             - enables poisoning (filling with predefined value) of elemen of stack [**SLOW**]
 2. STACK_USE_PTR_POISON         - enables poisoning of structural pointers
 3. STACK_USE_CANARY             - enables canaries (arrays of predefined ULL values on both sides of data) constance of which is checked
-4. STACK_USE_STRUCT_HASH        - enables calculation of hash of valuable values (like capacity, len etc.) inside stack structure
-5. STACK_USE_DATA_HASH          - enables calculation of bitwise hash of data [**SLOW**]
+4. STACK_USE_STRUCT_HASH        - enables calculation of hash of valuable values (like capacity, len etc.) inside stack structure, for now requires SSE4.2
+5. STACK_USE_DATA_HASH          - enables calculation of bitwise hash of data, for now requires SSE4.2 [**SLOW**]
 6. STACK_USE_CAPACITY_SYS_CHECK - enables system capacity correctness check (via malloc_usable_size in unix or _msize in windows) 
 7. STACK_USE_PTR_SYS_CHECK      - enables system ptr correctness check (os dependent) [**SLOW**]
 8. STACK_VERBOSE 2              - sets the level of log verbosity from 0 to 2; if not defined eq. 0
