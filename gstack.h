@@ -296,11 +296,10 @@ static stack_status stack_pop(stack *this_, STACK_TYPE* item)
 
     if (ptrValid(item)) {   
         *item = this_->data[this_->len];
-        #ifdef STACK_USE_POISON             //TODO do smth else?
+        #ifdef STACK_USE_POISON 
             if (stack_isPoisoned(item)) {                               
                 STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: accessed uninitilized element!");
             }
-            memset((char*)(&this_->data[this_->len]), STACK_ELEM_POISON, sizeof(STACK_TYPE));
         #endif
 
         #ifdef STACK_USE_CANARY
@@ -308,6 +307,10 @@ static stack_status stack_pop(stack *this_, STACK_TYPE* item)
             //     STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
         #endif
     }
+
+    #ifdef STACK_USE_POISON
+        memset((char*)(&this_->data[this_->len]), STACK_ELEM_POISON, sizeof(STACK_TYPE));
+    #endif
    
     #ifdef AUTO_SHRINK
         size_t newCapacity = stack_shrinkageFactorCalc(this_->capacity);
@@ -637,7 +640,7 @@ static uint64_t stack_calculateStructHash(const stack *this_)
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->data));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->capacity));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->len));
-    hash = _mm_crc32_u64(hash, (uint64_t)(this_->status));
+    // hash = _mm_crc32_u64(hash, (uint64_t)(this_->status));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
     
     #ifdef STACK_USE_DATA_HASH
