@@ -1,3 +1,6 @@
+typedef int STACK_TYPE;
+#define ELEM_PRINTF_FORM "%d"
+
 #include "gstack.h"
 #include "gtest/gtest.h"
  

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Onegin)
+project(Stack)
 
 set(CMAKE_CXX_COMPILER "/usr/bin/clang++" CACHE string "clang compiler" FORCE) #TODO check if clang is present when COVERAGE needed
                 

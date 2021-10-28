@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 
+typedef double STACK_TYPE;
+#define ELEM_PRINTF_FORM "%g"
+
 #include "gstack.h"
 
 #include <random>
@@ -63,7 +66,7 @@ TEST(PushPop, Manual)
     stack_push(&S, 14);
     stack_dump(&S);
     
-    int res = 0;
+    STACK_TYPE res = 0;
     stack_pop(&S, &res);
     EXPECT_EQ(res, 14);
 
@@ -75,7 +78,7 @@ TEST(PushPop, Manual)
 TEST(PushPop, Random)
 {
     stack S = {};
-    std::stack<int> STD = {};
+    std::stack<STACK_TYPE> STD = {};
 
     stack_ctor(&S);
     
@@ -84,12 +87,12 @@ TEST(PushPop, Random)
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
         if (rnd() % 10 < 7) {
-            int item = rnd();
+            STACK_TYPE item = rnd();
             stack_push(&S, item);
             STD.push(item);
         }
         else if (!(S.len || STD.size())) {
-            int item = 0;
+            STACK_TYPE item = 0;
             stack_pop(&S, &item);
             EXPECT_EQ(item, STD.top());
             STD.pop();
@@ -98,7 +101,7 @@ TEST(PushPop, Random)
     EXPECT_EQ(S.len, STD.size());
     while (S.len)
     {
-        int item = 0;
+        STACK_TYPE item = 0;
         stack_pop(&S, &item);
         EXPECT_EQ(item, STD.top());
         STD.pop();

@@ -49,8 +49,6 @@
     #include <sys/mman.h>
 #endif
 
-#include "gstack-config.h"
-
 
 //===========================================
 // Stack options configuration

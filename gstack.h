@@ -458,7 +458,7 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out)
         size_t cap = fmin(this_->len, capacity);          // in case structure is corrupt and len > capacity
 
         for (size_t i = 0; i < cap; ++i) {
-                fprintf(out, "| *   %d\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
+                fprintf(out, "| *   " ELEM_PRINTF_FORM "\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
         }
 
         bool printAll = true;
