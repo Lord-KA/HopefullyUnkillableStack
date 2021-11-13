@@ -281,7 +281,7 @@ static stack_status stack_push(stack *this_, STACK_TYPE item)
 }
 
 
-static stack_status stack_pop(stack *this_, STACK_TYPE* item)
+static stack_status stack_pop(stack *this_, STACK_TYPE *item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -328,6 +328,24 @@ static stack_status stack_pop(stack *this_, STACK_TYPE* item)
     #ifdef STACK_USE_STRUCT_HASH
         this_->structHash = stack_calculateStructHash(this_);
     #endif
+
+    return STACK_HEALTH_CHECK(this_);
+}
+
+static stack_status stack_top(stack *this_, STACK_TYPE **item)
+{
+    STACK_PTR_VALIDATE(this_);
+
+    if (STACK_HEALTH_CHECK(this_))
+        return this_->status;
+    
+    if (this_->len == 0) {
+        STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: trying to pop from empty stack!");
+    }
+
+    if (ptrValid(item)) {   
+        *item = &this_->data[this_->len - 1];
+    }
 
     return STACK_HEALTH_CHECK(this_);
 }

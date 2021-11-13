@@ -372,13 +372,23 @@ static stack_status stack_push(stack *this_, STACK_TYPE item);
 
 
 /**
- * @fn static stack_status stack_pop (stack *this_, STACK_TYPE item)
+ * @fn static stack_status stack_pop (stack *this_, STACK_TYPE *item)
  * @brief pops last elem from stack
  * @param this_ pointer to stack
  * @param item pointer to var to write to or NULL if value should be discarded
  * @return bitset of stack status
  */
-static stack_status stack_pop (stack *this_, STACK_TYPE* item);
+static stack_status stack_pop (stack *this_, STACK_TYPE *item);
+
+
+/**
+ * @fn static stack_status stack_top (stack *this_, STACK_TYPE **item)
+ * @brief puts puts ptr to current top element
+ * @param this_ pointer to stack
+ * @param item pointer to pointer to top elem
+ * @return bitset of stack status
+ */
+static stack_status stack_top (stack *this_, STACK_TYPE **item);
 
 
 /**
@@ -390,7 +400,7 @@ static stack_status stack_pop (stack *this_, STACK_TYPE* item);
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
 static stack_status stack_healthCheck(stack *this_);
 #else
-static stack_status stack_healthCheck(const stack *this_);  
+static stack_status stack_healthCheck(const stack *this_); 
 #endif
 
 
