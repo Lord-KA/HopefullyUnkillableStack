@@ -1,9 +1,12 @@
-#ifndef GSTACK_HEADER_H
-#define GSTACK_HEADER_H
-
 /**
  * @file Header for generalized stack structure with additional debug options
  */
+
+/**
+ * STACK_TYPE must be defined before including the header
+ * ELEM_PRINTF_FORM could be defined for printing custom type data in dumps
+ */
+
 
 #ifdef CHEAP_DEBUG                       /// Debug options that don't require much time or space
     #define STACK_USE_PTR_POISON
@@ -49,11 +52,15 @@
     #include <sys/mman.h>
 #endif
 
+#include "pseudo-templates.h"
 
 //===========================================
 // Stack options configuration
 
-struct stack;
+struct GENERIC(stack);
+
+#ifndef STACK_CONST_GUARD
+#define STACK_CONST_GUARD
 
 static const char STACK_LOG_DELIM[] = "===========================";      /// delim for stack logs
 
@@ -93,15 +100,7 @@ typedef unsigned long long STACK_CANARY_TYPE;          /// Type for canaries can
 #else
     static const size_t STACK_CANARY_WRAPPER_LEN = 0;                   /// Service value for turned off canaries
 #endif
-
-#ifndef STACK_VERBOSE
-    #define STACK_VERBOSE 0                 /// Service value for stack verbosity if not stated otherwise is 0
-#endif
-
-
- 
-typedef int stack_status;                   /// stack status is a bitset inside an int
-    
+   
 enum stack_status_enum {                        /// ERROR codes for stack
     STACK_OK                      = 0,               /// All_is_fine status
 
@@ -121,6 +120,19 @@ enum stack_status_enum {                        /// ERROR codes for stack
     STACK_BAD_CAPACITY    = 1<<15             /// Stack capacity has been modified and/or is clearly incorrect
 };
 
+#endif  /* STACK_CONST_GUARD */
+
+#ifndef STACK_VERBOSE
+    #define STACK_VERBOSE 0                 /// Service value for stack verbosity if not stated otherwise is 0
+#endif
+
+#ifndef ELEM_PRINTF_FORM
+    #define ELEM_PRINTF_FORM " "
+#endif
+
+ 
+typedef int stack_status;                   /// stack status is a bitset inside an int
+ 
 
 //===========================================
 // Advanced debug functions
@@ -153,7 +165,7 @@ static bool ptrValid(const void* ptr);
  * @return uint64_t hash value
  */
 #ifdef STACK_USE_STRUCT_HASH
-    static uint64_t stack_calculateStructHash(const stack *this_);
+    static uint64_t GENERIC(stack_calculateStructHash)(const GENERIC(stack) *this_);
 #endif
 
 
@@ -164,7 +176,7 @@ static bool ptrValid(const void* ptr);
  * @return uint64_t hash value
  */
 #ifdef STACK_USE_DATA_HASH
-    static uint64_t stack_calculateDataHash(const stack *this_);
+    static uint64_t GENERIC(stack_calculateDataHash)(const GENERIC(stack) *this_);
 #endif
 
 
@@ -175,7 +187,7 @@ static bool ptrValid(const void* ptr);
  * @return `true` if poisoned, `false` otherwise
  */
 #ifdef STACK_USE_POISON
-    static bool stack_isPoisoned(const STACK_TYPE *elem);
+    static bool GENERIC(stack_isPoisoned)(const STACK_TYPE *elem);
 #endif
 
 
@@ -186,7 +198,7 @@ static bool ptrValid(const void* ptr);
  * @return real capacity
  */
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-    static size_t stack_getRealCapacity(void* ptr);
+    static size_t GENERIC(stack_getRealCapacity)(void* ptr);
 #endif
 
 
@@ -206,7 +218,7 @@ static bool ptrValid(const void* ptr);
 {                                                                                                    \
     fprintf(out, "%s\n| %s\n", STACK_LOG_DELIM, message);                                             \
     fprintf(out, "| called from func %s on line %d of file %s\n", __func__, __LINE__, __FILE__);       \
-    stack_dumpToStream(this_, out);                                                                     \
+    GENERIC(stack_dumpToStream)(this_, out);                                                            \
 }
 
 
@@ -218,7 +230,7 @@ static bool ptrValid(const void* ptr);
  */
 #ifndef NDEBUG
     #define STACK_HEALTH_CHECK(this_) ({                                                                                \
-        if (stack_healthCheck(this_)) {                                                                                  \
+        if (GENERIC(stack_healthCheck)(this_)) {                                                                         \
             fprintf(this_->logStream, "Probles found in healthcheck run from %s on line %zu\n\n", __func__, __LINE__);    \
         }                                                                                                                  \
         this_->status;                                                                                                      \
@@ -272,7 +284,7 @@ static bool ptrValid(const void* ptr);
  * @param capacity current capacity to expand from  
  * @return new capacity
  */
-static size_t stack_expandFactorCalc(size_t capacity);
+static size_t GENERIC(stack_expandFactorCalc)(size_t capacity);
 
 
 /**
@@ -281,7 +293,7 @@ static size_t stack_expandFactorCalc(size_t capacity);
  * @param capacity current capacity to shrink from
  * @return new capacity
  */
-static size_t stack_shrinkageFactorCalc(size_t capacity);
+static size_t GENERIC(stack_shrinkageFactorCalc)(size_t capacity);
 
 
 /**
@@ -291,7 +303,7 @@ static size_t stack_shrinkageFactorCalc(size_t capacity);
  * @return allocated size
  * @}
  */
-static size_t stack_allocated_size(size_t capacity);
+static size_t GENERIC(stack_allocated_size)(size_t capacity);
 
 
 //===========================================
@@ -303,7 +315,7 @@ static size_t stack_allocated_size(size_t capacity);
  * @stuct stack
  * @brief generalized stack structure with additional debug features
  */
-struct stack                
+struct GENERIC(stack)                
 {
     /// @brief left canary array
     #ifdef STACK_USE_CANARY
@@ -340,7 +352,7 @@ struct stack
         STACK_CANARY_TYPE rightCanary[STACK_CANARY_WRAPPER_LEN];
     #endif
 
-} typedef stack;
+} typedef GENERIC(stack);
 
 
 /**
@@ -349,7 +361,7 @@ struct stack
  * @param this_ pointer to memory allocated for stack structure
  * @return bitset of stack status
  */
-static stack_status stack_ctor(stack *this_);
+static stack_status GENERIC(stack_ctor)(GENERIC(stack) *this_);
 
 
 /**
@@ -358,7 +370,7 @@ static stack_status stack_ctor(stack *this_);
  * @param this_ pointer to stack structure
  * @return bitset of stack status
  */
-static stack_status stack_dtor(stack *this_);
+static stack_status GENERIC(stack_dtor)(GENERIC(stack) *this_);
 
 
 /**
@@ -368,7 +380,7 @@ static stack_status stack_dtor(stack *this_);
  * @param item elem to be pushed
  * @return bitset of stack status
  */
-static stack_status stack_push(stack *this_, STACK_TYPE item);
+static stack_status GENERIC(stack_push)(GENERIC(stack) *this_, STACK_TYPE item);
 
 
 /**
@@ -378,7 +390,7 @@ static stack_status stack_push(stack *this_, STACK_TYPE item);
  * @param item pointer to var to write to or NULL if value should be discarded
  * @return bitset of stack status
  */
-static stack_status stack_pop (stack *this_, STACK_TYPE *item);
+static stack_status GENERIC(stack_pop) (GENERIC(stack) *this_, STACK_TYPE *item);
 
 
 /**
@@ -388,7 +400,7 @@ static stack_status stack_pop (stack *this_, STACK_TYPE *item);
  * @param item pointer to pointer to top elem
  * @return bitset of stack status
  */
-static stack_status stack_top (stack *this_, STACK_TYPE **item);
+static stack_status GENERIC(stack_top) (GENERIC(stack) *this_, STACK_TYPE **item);
 
 
 /**
@@ -398,9 +410,9 @@ static stack_status stack_top (stack *this_, STACK_TYPE **item);
  * @return bitset of stack status (of errors)
  */
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-static stack_status stack_healthCheck(stack *this_);
+static stack_status GENERIC(stack_healthCheck)(GENERIC(stack) *this_);
 #else
-static stack_status stack_healthCheck(const stack *this_); 
+static stack_status GENERIC(stack_healthCheck)(const GENERIC(stack) *this_); 
 #endif
 
 
@@ -410,7 +422,7 @@ static stack_status stack_healthCheck(const stack *this_);
  * @param this_ pointer to stack
  * @return bitset of stack status
  */
-static stack_status stack_dump(const stack *this_);
+static stack_status GENERIC(stack_dump)(const GENERIC(stack) *this_);
 
 
 /**
@@ -420,7 +432,7 @@ static stack_status stack_dump(const stack *this_);
  * @param out stream for logs
  * @return bitset of stack status
  */
-static stack_status stack_dumpToStream(const stack *this_, FILE *out);
+static stack_status GENERIC(stack_dumpToStream)(const GENERIC(stack) *this_, FILE *out);
 
 
 /**
@@ -430,7 +442,5 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out);
  * @param newCapacity new capacity to reallocate to
  * @return bitset of stack status
  */
-static stack_status stack_reallocate(stack *this_, const size_t newCapacity);
+static stack_status GENERIC(stack_reallocate)(GENERIC(stack) *this_, const size_t newCapacity);
 
-
-#endif

@@ -1,12 +1,11 @@
-#ifndef GSTACK_H
-#define GSTACK_H
-
 #include "gstack-header.h"
 
 
 //===========================================
 // Advanced debug functions
 
+#ifndef STACK_FUNC_GUARD
+#define STACK_FUNC_GUARD
 
 static bool ptrValid(const void* ptr)         
 {
@@ -61,9 +60,11 @@ static bool ptrValid(const void* ptr)
     }
 #endif
 
+#endif /* STACK_FUNC_GUARD */
+
 
 #ifdef STACK_USE_POISON
-    static bool stack_isPoisoned(const STACK_TYPE *elem)                       
+    static bool GENERIC(stack_isPoisoned)(const STACK_TYPE *elem)                       
     {
         assert(ptrValid(elem));
         return !memcmp(elem, &STACK_REFERENCE_POISONED_ELEM, sizeof(STACK_TYPE));
@@ -72,7 +73,7 @@ static bool ptrValid(const void* ptr)
 
 
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-    static size_t stack_getRealCapacity(void *ptr) 
+    static size_t GENERIC(stack_getRealCapacity)(void *ptr) 
     {
         if (!ptrValid(ptr)) {
             fprintf(stderr, "WARNING: getRealCapacity got a bad pointer!\n");
@@ -99,7 +100,7 @@ static bool ptrValid(const void* ptr)
 // Auxiliary stack functions
 
 
-static size_t stack_expandFactorCalc(size_t capacity)          
+static size_t GENERIC(stack_expandFactorCalc)(size_t capacity)          
 {
     #ifdef STACK_USE_CANARY
         if (capacity <= 1)
@@ -120,7 +121,7 @@ static size_t stack_expandFactorCalc(size_t capacity)
 }
 
 
-static size_t stack_shrinkageFactorCalc(size_t capacity)
+static size_t GENERIC(stack_shrinkageFactorCalc)(size_t capacity)
 {
     #ifdef STACK_USE_CANARY
         if (capacity <= 1)          
@@ -140,7 +141,7 @@ static size_t stack_shrinkageFactorCalc(size_t capacity)
 }
 
 
-static size_t stack_allocated_size(size_t capacity) 
+static size_t GENERIC(stack_allocated_size)(size_t capacity) 
 {
     return (capacity * sizeof(STACK_TYPE) + 2 * STACK_CANARY_WRAPPER_LEN * sizeof(STACK_CANARY_TYPE));
 }
@@ -150,7 +151,7 @@ static size_t stack_allocated_size(size_t capacity)
 // Stack implementation
 
 
-static stack_status stack_ctor(stack *this_)
+static stack_status GENERIC(stack_ctor)(GENERIC(stack) *this_)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -158,7 +159,7 @@ static stack_status stack_ctor(stack *this_)
     this_->len      = STACK_SIZE_T_POISON;
     this_->logStream = stdout;          //TODO
     
-    this_->dataWrapper = (STACK_CANARY_TYPE*)calloc(stack_allocated_size(STACK_STARTING_CAPACITY), sizeof(char));
+    this_->dataWrapper = (STACK_CANARY_TYPE*)calloc(GENERIC(stack_allocated_size)(STACK_STARTING_CAPACITY), sizeof(char));
 
     if (!this_->dataWrapper) {
         #ifdef STACK_USE_PTR_POISON
@@ -190,31 +191,31 @@ static stack_status stack_ctor(stack *this_)
     #endif
 
     #ifdef STACK_USE_DATA_HASH
-        this_->dataHash = stack_calculateDataHash(this_);
+        this_->dataHash = GENERIC(stack_calculateDataHash)(this_);
     #endif
 
     #ifdef STACK_USE_STRUCT_HASH
-        this_->structHash = stack_calculateStructHash(this_);
+        this_->structHash = GENERIC(stack_calculateStructHash)(this_);
     #endif
 
     return STACK_HEALTH_CHECK(this_);
 }   
 
 
-static stack_status stack_dtor(stack *this_)           
+static stack_status GENERIC(stack_dtor)(GENERIC(stack) *this_)           
 {
     STACK_PTR_VALIDATE(this_);          
 
     STACK_HEALTH_CHECK(this_);
 
     #ifdef STACK_USE_CAPACITY_SYS_CHECK
-        size_t newCapacity = stack_getRealCapacity(this_->dataWrapper);
+        size_t newCapacity = GENERIC(stack_getRealCapacity)(this_->dataWrapper);
         if (newCapacity != STACK_SIZE_T_POISON)
             this_->capacity = newCapacity;
     #endif
 
     #ifdef STACK_USE_POISON
-        memset((char*)this_->dataWrapper, STACK_FREED_POISON, stack_allocated_size(this_->capacity));
+        memset((char*)this_->dataWrapper, STACK_FREED_POISON, GENERIC(stack_allocated_size)(this_->capacity));
     #endif
 
 
@@ -237,7 +238,7 @@ static stack_status stack_dtor(stack *this_)
 }
 
 
-static stack_status stack_push(stack *this_, STACK_TYPE item)
+static stack_status GENERIC(stack_push)(GENERIC(stack) *this_, STACK_TYPE item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -247,12 +248,12 @@ static stack_status stack_push(stack *this_, STACK_TYPE item)
     FILE *out = this_->logStream;       //TODO
    
     if (this_->len == this_->capacity) {
-        this_->status |= stack_reallocate(this_, stack_expandFactorCalc(this_->capacity));
+        this_->status |= GENERIC(stack_reallocate)(this_, GENERIC(stack_expandFactorCalc)(this_->capacity));
     }
     
 
     #ifdef STACK_USE_POISON  
-        if (!stack_isPoisoned(&this_->data[this_->len])) {
+        if (!GENERIC(stack_isPoisoned)(&this_->data[this_->len])) {
             STACK_LOG_TO_STREAM(this_, out, "Stack structure corrupt, element was modified!");
             this_->status |= STACK_DATA_INTEGRITY_VIOLATED;
         }
@@ -269,11 +270,11 @@ static stack_status stack_push(stack *this_, STACK_TYPE item)
     this_->len += 1;
 
     #ifdef STACK_USE_DATA_HASH
-        this_->dataHash = stack_calculateDataHash(this_);
+        this_->dataHash = GENERIC(stack_calculateDataHash)(this_);
     #endif
 
     #ifdef STACK_USE_STRUCT_HASH
-        this_->structHash = stack_calculateStructHash(this_);
+        this_->structHash = GENERIC(stack_calculateStructHash)(this_);
     #endif
 
 
@@ -281,7 +282,7 @@ static stack_status stack_push(stack *this_, STACK_TYPE item)
 }
 
 
-static stack_status stack_pop(stack *this_, STACK_TYPE *item)
+static stack_status GENERIC(stack_pop)(GENERIC(stack) *this_, STACK_TYPE *item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -297,14 +298,9 @@ static stack_status stack_pop(stack *this_, STACK_TYPE *item)
     if (ptrValid(item)) {   
         *item = this_->data[this_->len];
         #ifdef STACK_USE_POISON 
-            if (stack_isPoisoned(item)) {                               
+            if (GENERIC(stack_isPoisoned)(item)) {                               
                 STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: accessed uninitilized element!");
             }
-        #endif
-
-        #ifdef STACK_USE_CANARY
-            // if (stack_isCanaryVal(item))                                                                                //TODO think if it is possible to do this check properly
-            //     STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING accessed cannary wrapper element!");
         #endif
     }
 
@@ -313,7 +309,7 @@ static stack_status stack_pop(stack *this_, STACK_TYPE *item)
     #endif
    
     #ifdef AUTO_SHRINK
-        size_t newCapacity = stack_shrinkageFactorCalc(this_->capacity);
+        size_t newCapacity = GENERIC(stack_shrinkageFactorCalc)(this_->capacity);
 
         if (this_->len < newCapacity && this_->capacity > newCapacity)
         {
@@ -322,17 +318,17 @@ static stack_status stack_pop(stack *this_, STACK_TYPE *item)
     #endif
 
     #ifdef STACK_USE_DATA_HASH
-        this_->dataHash = stack_calculateDataHash(this_);
+        this_->dataHash = GENERIC(stack_calculateDataHash)(this_);
     #endif
 
     #ifdef STACK_USE_STRUCT_HASH
-        this_->structHash = stack_calculateStructHash(this_);
+        this_->structHash = GENERIC(stack_calculateStructHash)(this_);
     #endif
 
     return STACK_HEALTH_CHECK(this_);
 }
 
-static stack_status stack_top(stack *this_, STACK_TYPE **item)
+static stack_status GENERIC(stack_top)(GENERIC(stack) *this_, STACK_TYPE **item)
 {
     STACK_PTR_VALIDATE(this_);
 
@@ -343,7 +339,7 @@ static stack_status stack_top(stack *this_, STACK_TYPE **item)
         STACK_LOG_TO_STREAM(this_, this_->logStream, "WARNING: trying to pop from empty stack!");
     }
 
-    if (ptrValid(item)) {   
+    if (ptrValid(item)) {
         *item = &this_->data[this_->len - 1];
     }
 
@@ -351,7 +347,7 @@ static stack_status stack_top(stack *this_, STACK_TYPE **item)
 }
 
 
-static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
+static stack_status GENERIC(stack_reallocate)(GENERIC(stack) *this_, const size_t newCapacity)
 {
     STACK_HEALTH_CHECK(this_);
 
@@ -362,7 +358,7 @@ static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
         }
     #endif
 
-    STACK_CANARY_TYPE *newDataWrapper = (STACK_CANARY_TYPE*)realloc(this_->dataWrapper, stack_allocated_size(newCapacity));
+    STACK_CANARY_TYPE *newDataWrapper = (STACK_CANARY_TYPE*)realloc(this_->dataWrapper, GENERIC(stack_allocated_size)(newCapacity));
     if (newDataWrapper == NULL)             // reallocation failed
     {
         #ifdef STACK_USE_PTR_POISON
@@ -390,11 +386,11 @@ static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
     #endif
 
     #ifdef STACK_USE_DATA_HASH
-        this_->dataHash = stack_calculateDataHash(this_);
+        this_->dataHash = GENERIC(stack_calculateDataHash)(this_);
     #endif
 
     #ifdef STACK_USE_STRUCT_HASH
-        this_->structHash = stack_calculateStructHash(this_);
+        this_->structHash = GENERIC(stack_calculateStructHash)(this_);
     #endif
 
 
@@ -402,7 +398,7 @@ static stack_status stack_reallocate(stack *this_, const size_t newCapacity)
 }
 
 
-static stack_status stack_dumpToStream(const stack *this_, FILE *out)
+static stack_status GENERIC(stack_dumpToStream)(const GENERIC(stack) *this_, FILE *out)
 {
     STACK_PTR_VALIDATE(this_);
     if (!ptrValid(out)) {
@@ -442,7 +438,7 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out)
     size_t capacity = this_->capacity;
     #ifdef STACK_USE_CAPACITY_SYS_CHECK
         if (this_->status & STACK_BAD_CAPACITY) {
-            capacity = stack_getRealCapacity(this_->dataWrapper);
+            capacity = GENERIC(stack_getRealCapacity)(this_->dataWrapper);
             if (capacity == STACK_SIZE_T_POISON) {
                 capacity = this_->capacity;
             }
@@ -476,7 +472,7 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out)
         size_t cap = fmin(this_->len, capacity);          // in case structure is corrupt and len > capacity
 
         for (size_t i = 0; i < cap; ++i) {
-                fprintf(out, "| *   " ELEM_PRINTF_FORM "\n", this_->data[i]);      //TODO add generalized print // `*` for in-use cells
+                fprintf(out, "| *   " ELEM_PRINTF_FORM "\n", this_->data[i]);      // `*` for in-use cells
         }
 
         bool printAll = true;
@@ -486,7 +482,7 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out)
             if (capacity == this_->capacity) {
                 printAll = false;
                 for (size_t i = this_->len; i < capacity; ++i) {
-                    if (!stack_isPoisoned(&this_->data[i]))
+                    if (!GENERIC(stack_isPoisoned)(&this_->data[i]))
                         printAll = true;
                 }
             }
@@ -529,15 +525,15 @@ static stack_status stack_dumpToStream(const stack *this_, FILE *out)
     return this_->status;
 }
 
-static stack_status stack_dump(const stack *this_) 
+static stack_status GENERIC(stack_dump)(const GENERIC(stack) *this_) 
 {
-    return stack_dumpToStream(this_, this_->logStream);
+    return GENERIC(stack_dumpToStream)(this_, this_->logStream);
 }
 
 #ifdef STACK_USE_CAPACITY_SYS_CHECK
-static stack_status stack_healthCheck(stack *this_)            // healthcheck changes this_->capacity to realCapacity if the current value is definetly wrong
+static stack_status GENERIC(stack_healthCheck)(GENERIC(stack) *this_)            // healthcheck changes this_->capacity to realCapacity if the current value is definetly wrong
 #else
-static stack_status stack_healthCheck(const stack *this_)
+static stack_status GENERIC(stack_healthCheck)(const GENERIC(stack) *this_)
 #endif
 {
     STACK_PTR_VALIDATE(this_);
@@ -563,7 +559,7 @@ static stack_status stack_healthCheck(const stack *this_)
     uint64_t hash = 0;
 
     #ifdef STACK_USE_STRUCT_HASH
-        hash = stack_calculateStructHash(this_);
+        hash = GENERIC(stack_calculateStructHash)(this_);
         if (this_->structHash != hash) 
             this_->status |= STACK_BAD_STRUCT_HASH;
     #endif
@@ -588,7 +584,7 @@ static stack_status stack_healthCheck(const stack *this_)
     }
     
     #ifdef STACK_USE_CAPACITY_SYS_CHECK
-        size_t capacity = stack_getRealCapacity(this_->dataWrapper);
+        size_t capacity = GENERIC(stack_getRealCapacity)(this_->dataWrapper);
         if (capacity != STACK_SIZE_T_POISON) {
             if ((capacity < this_->capacity)) {
                 STACK_LOG_TO_STREAM(this_, stderr, "Capacity != RealCapacity");
@@ -613,7 +609,7 @@ static stack_status stack_healthCheck(const stack *this_)
 
 
     #ifdef STACK_USE_DATA_HASH
-        hash = stack_calculateDataHash(this_);
+        hash = GENERIC(stack_calculateDataHash)(this_);
         if (this_->dataHash != hash) 
             this_->status |= STACK_BAD_DATA_HASH;
     #endif
@@ -633,7 +629,7 @@ static stack_status stack_healthCheck(const stack *this_)
 
     #ifdef STACK_USE_POISON
         for (size_t i = this_->len; i < this_->capacity; ++i) {
-            if (!stack_isPoisoned(&this_->data[i])) {
+            if (!GENERIC(stack_isPoisoned)(&this_->data[i])) {
                 this_->status |= STACK_DATA_INTEGRITY_VIOLATED;
             }
         }
@@ -648,7 +644,7 @@ static stack_status stack_healthCheck(const stack *this_)
 
 
 #ifdef STACK_USE_STRUCT_HASH
-static uint64_t stack_calculateStructHash(const stack *this_)
+static uint64_t GENERIC(stack_calculateStructHash)(const GENERIC(stack) *this_)
 {
     assert(ptrValid(this_));
 
@@ -658,7 +654,6 @@ static uint64_t stack_calculateStructHash(const stack *this_)
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->data));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->capacity));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->len));
-    // hash = _mm_crc32_u64(hash, (uint64_t)(this_->status));
     hash = _mm_crc32_u64(hash, (uint64_t)(this_->logStream));
     
     #ifdef STACK_USE_DATA_HASH
@@ -671,7 +666,7 @@ static uint64_t stack_calculateStructHash(const stack *this_)
 
 
 #ifdef STACK_USE_DATA_HASH
-static uint64_t stack_calculateDataHash(const stack *this_)
+static uint64_t GENERIC(stack_calculateDataHash)(const GENERIC(stack) *this_)
 {
     assert(ptrValid(this_));
 
@@ -685,5 +680,3 @@ static uint64_t stack_calculateDataHash(const stack *this_)
 }
 #endif
 
-
-#endif

@@ -1,34 +1,31 @@
-typedef int STACK_TYPE;
+#define STACK_TYPE int
 #define ELEM_PRINTF_FORM "%d"
 
 #include "gstack.h"
 #include "gtest/gtest.h"
  
-
 struct myFixture : public ::testing::Test {
     public:
         char LeftButcher[8];
-        stack S;
+        GENERIC(stack) S;
         char RightButcher[8];
         char Skip[800];
-        stack *Stack = &S;
+        GENERIC(stack) *Stack = &S;
 
         void SetUp() override {
-            // Stack = new stack;
-            stack_ctor(Stack);
-            stack_push(Stack, 10);
-            stack_push(Stack, 11);
-            stack_push(Stack, 12);
-            stack_push(Stack, 13);
-            stack_push(Stack, 14);
-            stack_push(Stack, 15);
-            stack_push(Stack, 16);
-            stack_push(Stack, 17);
-            stack_push(Stack, 24);
+            GENERIC(stack_ctor)(Stack);
+            GENERIC(stack_push)(Stack, 10);
+            GENERIC(stack_push)(Stack, 11);
+            GENERIC(stack_push)(Stack, 12);
+            GENERIC(stack_push)(Stack, 13);
+            GENERIC(stack_push)(Stack, 14);
+            GENERIC(stack_push)(Stack, 15);
+            GENERIC(stack_push)(Stack, 16);
+            GENERIC(stack_push)(Stack, 17);
+            GENERIC(stack_push)(Stack, 24);
         }
         void TearDown() override {
-            stack_dtor(Stack);
-            // delete Stack;
+            GENERIC(stack_dtor)(Stack);
         }
 };
 
@@ -78,10 +75,10 @@ TEST_F(myFixture, StructureCanary)
 {
     strcpy(LeftButcher + 7, "This is a string11111");
     puts("Altered stack structure with left butcher:\n");
-    stack_healthCheck(Stack);
+    GENERIC(stack_healthCheck)(Stack);
     strcpy(RightButcher - 36, "Another string!");
     puts("Altered stacks structure with right butcher:\n");
-    stack_healthCheck(Stack);
+    GENERIC(stack_healthCheck)(Stack);
 }
 
 
@@ -89,27 +86,26 @@ TEST_F(myFixture, StructureHashCapacity)
 {
     Stack->capacity = 100;
     puts("Altered capacity:\n");
-    stack_healthCheck(Stack);
+    GENERIC(stack_healthCheck)(Stack);
 }
 
 TEST_F(myFixture, StructureHashLen)
 {
     Stack->len = 1000;
     puts("Altered len:\n");
-    stack_healthCheck(Stack);
+    GENERIC(stack_healthCheck)(Stack);
 }
 
 
 TEST_F(myFixture, DataCanary)
 {
-    stack *this_ = Stack;
+    GENERIC(stack) *this_ = Stack;
     char* lButcher = (char*)(LEFT_CANARY_WRAPPER);
     char* rButcher = (char*)(RIGHT_CANARY_WRAPPER) - 16;
     puts("\nAltered data from left:\n");
     strcpy(lButcher, "Somewhat long string of a sorts...");
-    stack_healthCheck(Stack);
+    GENERIC(stack_healthCheck)(Stack);
     puts("\nAltered data from right:\n");
     strcpy(rButcher, "Hamster running down the cliff...");
-    stack_healthCheck(Stack);
-
+    GENERIC(stack_healthCheck)(Stack);
 }
