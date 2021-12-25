@@ -346,6 +346,25 @@ static stack_status GENERIC(stack_top)(GENERIC(stack) *this_, STACK_TYPE **item)
     return STACK_HEALTH_CHECK(this_);
 }
 
+static stack_status GENERIC(stack_get)(GENERIC(stack) *this_, size_t pos, STACK_TYPE **item)
+{
+    STACK_PTR_VALIDATE(this_);
+
+    if (STACK_HEALTH_CHECK(this_))
+        return this_->status;
+    
+    if (pos >= this_->len) {
+        STACK_LOG_TO_STREAM(this_, this_->logStream, "ERROR: bad position provided to stack_get!");
+        *item = NULL;
+    }
+
+    if (ptrValid(item)) {
+        *item = &this_->data[pos];
+    }
+
+    return STACK_HEALTH_CHECK(this_);
+}
+
 
 static stack_status GENERIC(stack_reallocate)(GENERIC(stack) *this_, const size_t newCapacity)
 {

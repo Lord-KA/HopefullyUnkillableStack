@@ -404,6 +404,17 @@ static stack_status GENERIC(stack_top) (GENERIC(stack) *this_, STACK_TYPE **item
 
 
 /**
+ * @fn static stack_status stack_get (stack *this_, size_t pos, STACK_TYPE **item)
+ * @brief puts puts ptr to element by requested position
+ * @param this_ pointer to stack
+ * @param pos  requested element position in stack
+ * @param item pointer to pointer to top elem
+ * @return bitset of stack status
+ */
+static stack_status GENERIC(stack_get) (GENERIC(stack) *this_, size_t pos, STACK_TYPE **item);
+
+
+/**
  * @fn static stack_status stack_healthCheck(stack *this_)
  * @brief checks stacks state and logs every problem
  * @param this_ pointer to stack; const if no capacity sys check because it overrides when capacity if nessasary

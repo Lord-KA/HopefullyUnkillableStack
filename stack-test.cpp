@@ -187,7 +187,6 @@ TEST(PushPopLong, Random)
     GENERIC(stack_ctor)(&S);
     
     size_t iterations = rnd() % 10000 + 100;
-    // iterations = 0;
     for (size_t i = 0; i < iterations; ++i) {
         EXPECT_EQ(S.len, STD.size());
         if (rnd() % 10 < 7) {
@@ -212,4 +211,31 @@ TEST(PushPopLong, Random)
      
     }
     GENERIC(stack_dtor)(&S);
+}
+
+TEST(PushGet, Random)
+{
+    GENERIC(stack) S = {};
+    std::vector<STACK_TYPE> STD = {};
+
+    GENERIC(stack_ctor)(&S);
+    
+    size_t iterations = rnd() % 1000 + 100;
+    for (size_t i = 0; i < iterations; ++i) {
+        EXPECT_EQ(S.len, STD.size());
+        if (rnd() % 10 < 7) {
+            STACK_TYPE item = rnd();
+            GENERIC(stack_push)(&S, item);
+            STD.push_back(item);
+        }
+        else if (!(S.len || STD.size())) {
+            int pos = rnd() % S.len;
+            STACK_TYPE *item = NULL;
+            GENERIC(stack_get)(&S, pos, &item);
+            EXPECT_EQ(*item, STD[pos]);
+        }
+    }
+    EXPECT_EQ(S.len, STD.size());
+    GENERIC(stack_dtor)(&S);
+
 }
