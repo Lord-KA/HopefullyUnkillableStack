@@ -236,6 +236,8 @@ TEST(PushGet, Random)
         }
     }
     EXPECT_EQ(S.len, STD.size());
+    GENERIC(stack_clear)(&S);
+    EXPECT_EQ(S.len, 0);
     GENERIC(stack_dtor)(&S);
 
 }

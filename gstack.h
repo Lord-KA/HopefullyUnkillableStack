@@ -417,6 +417,16 @@ static stack_status GENERIC(stack_reallocate)(GENERIC(stack) *this_, const size_
 }
 
 
+static stack_status GENERIC(stack_clear)(GENERIC(stack) *this_)
+{
+    stack_status status = GENERIC(stack_dtor)(this_);
+    if (status != 0)
+        return status;
+    status = GENERIC(stack_ctor)(this_);
+    return status;
+}
+
+
 static stack_status GENERIC(stack_dumpToStream)(const GENERIC(stack) *this_, FILE *out)
 {
     STACK_PTR_VALIDATE(this_);

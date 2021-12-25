@@ -437,6 +437,15 @@ static stack_status GENERIC(stack_dump)(const GENERIC(stack) *this_);
 
 
 /**
+ * @fn static stack_status stack_clear(const stack *this_)                  
+ * @brief destroys stack and creates a new one
+ * @param this_ pointer to stack
+ * @return bitset of stack status
+ */
+static stack_status GENERIC(stack_clear)(const GENERIC(stack) *this_);
+
+
+/**
  * @fn static stack_status stack_dumpToStream(const stack *this_, FILE *out)
  * @brief dumps stack structure and data into `out`
  * @param this_ pointer to stack
