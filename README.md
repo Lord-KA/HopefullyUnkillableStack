@@ -1,17 +1,19 @@
 # Hopefully Unkillable Stack
 
-This is a generalized stack container lib with additional debug options like hash calculation, canaries and elem/ptr poison.
+This is a generalized stack container header-only library in C with additional debug options like hash calculation, canaries and elem/ptr poison.
 
 ## Debug options that could be enabled with macro
 
-1. STACK_USE_POISON             - enables poisoning (filling with predefined value) of elemen of stack [**SLOW**]
-2. STACK_USE_PTR_POISON         - enables poisoning of structural pointers
-3. STACK_USE_CANARY             - enables canaries (arrays of predefined ULL values on both sides of data) constance of which is checked
-4. STACK_USE_STRUCT_HASH        - enables calculation of hash of valuable values (like capacity, len etc.) inside stack structure, for now requires SSE4.2
-5. STACK_USE_DATA_HASH          - enables calculation of bitwise hash of data, for now requires SSE4.2 [**SLOW**]
-6. STACK_USE_CAPACITY_SYS_CHECK - enables system capacity correctness check (via malloc_usable_size in unix or _msize in windows) 
-7. STACK_USE_PTR_SYS_CHECK      - enables system ptr correctness check (os dependent) [**SLOW**]
-8. STACK_VERBOSE 2              - sets the level of log verbosity from 0 to 2; if not defined eq. 0
+| Debug flag/option              | description                                                                                                              | traits |
+|--------------------------------|--------------------------------------------------------------------------------------------------------------------------|--------|
+| `STACK_USE_POISON`             | enables poisoning (filling with predefined value) of stack data                                                          | [**SLOW**] |
+| `STACK_USE_PTR_POISON`         | enables poisoning of structural pointers                                                                                 | |
+| `STACK_USE_CANARY`             | enables canaries (arrays of predefined 64bit values on both sides of data) constance of which is checked                 | |
+| `STACK_USE_STRUCT_HASH`        | enables hash calculation of structural values of the stack structure, like capacity, value count etc.                    | [**REQUIRES_SSE4.2**] |
+| `STACK_USE_DATA_HASH`          | enables calculation of bitwise hash of data                                                                              | [**SLOW**] [**REQUIRES_SSE4.2**] |
+| `STACK_USE_CAPACITY_SYS_CHECK` | enables system capacity correctness check (via `malloc_usable_size()` in unix or `_msize()` in windows)                  | [**OS_DEPENDENT**] |
+| `STACK_USE_PTR_SYS_CHECK`      | enables system pointer correctness check                                                                                 | [**SLOW**] [**OS_DEPENDENT**] |
+| `STACK_VERBOSE 2`              | sets the level of log verbosity from 0 to 2; if not defined eq. 0                                                        | |
 
 
 ## Building with some debug options
@@ -41,11 +43,9 @@ $ make
 ```
 
 ## TODO
-1. Add c-style templates
-2. Add crosscompile options for cmake
-3. Add graphviz logs
-4. Improve logging
-5. Align clarifications in debug options listing
+1. Improve logging
+2. Add Graphviz to logs
+3. Add crosscompile options to CMake config
 
 ## Done
 1. Basic stack structure
@@ -62,3 +62,4 @@ $ make
 12. GoogleTesting
 13. Doxygen docs
 14. Capibara ASCII art
+15. Add c-style templates
